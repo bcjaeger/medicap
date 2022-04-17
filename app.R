@@ -55,193 +55,234 @@ dt_racs <- copy(dt_fake)
 
 # UI ----
 
-dash_input_width <- '97.5%'
-dash_sidebar_width <- 390
+input_width <- '97.5%'
+sidebar_width <- 390
 
-dash_sidebar <- dashboardSidebar(
+ui <- shinyUI(
 
-  sidebarMenu(
+  fluidPage(
 
-    pickerInput(
-      inputId = 'dataset',
-      label = 'Select a dataset',
-      choices = c("racs"   = "racs",
-                  "ami"    = "ami",
-                  "stroke" = "stroke"),
-      selected = NULL,
-      multiple = TRUE,
-      options = pickerOptions(maxOptions = 1),
-      width = dash_input_width
+    # theme = "mytheme.css",
+
+    introjsUI(),
+
+    # Application title
+    introBox(
+      titlePanel("Medicap"),
+      data.step = 1,
+      data.intro = "This is an application to explore Medicare data"
     ),
 
-    conditionalPanel(
-      condition = 'input.dataset.length > 0',
-      prettyCheckboxGroup(
-        inputId = "year",
-        label = "Select index year(s)",
-        inline = TRUE,
-        selected = NULL,
-        width = dash_input_width
-      ),
+    # Sidebar with a slider input for number of bins
+    sidebarLayout(
+      sidebarPanel(
 
-      actionGroupButtons(
-        inputIds = c('select_all_years', 'deselect_all_years'),
-        labels = c("Select all", "Clear"),
-        status = 'info'
-      )
+        introBox(
+          actionButton("help",
+                       "Press for instructions",
+                       icon = icon("question"),
+                       width = '95%')
+        ),
 
-    ),
+        br(),
 
-    conditionalPanel(
-      condition = "input.year.length > 0",
-      pickerInput(
-        inputId = 'outcome',
-        label = 'Select an outcome',
-        choices = c(),
-        selected = NULL,
-        multiple = TRUE,
-        options = pickerOptions(maxOptions = 1),
-        width = dash_input_width
-      )
-    ),
+        introBox(
 
-    conditionalPanel(
-      condition = 'input.year.length > 0 &
-                   input.outcome.length > 0',
-      pickerInput(
-        inputId = 'exposure',
-        label = 'Select an exposure',
-        choices = c('None'),
-        selected = NULL,
-        multiple = TRUE,
-        options = pickerOptions(maxOptions = 1),
-        width = dash_input_width
-      )
-    ),
-
-    conditionalPanel(
-      condition = 'input.year.length > 0 &
-                   input.outcome.length > 0 &
-                   input.exposure.length > 0',
-      pickerInput(
-        inputId = 'subset_variable',
-        label = 'Select a subsetting variable',
-        choices = c('None'),
-        selected = NULL,
-        multiple = TRUE,
-        options = pickerOptions(maxOptions = 1),
-        width = dash_input_width
-      )
-    ),
-
-    conditionalPanel(
-      condition = "input.year.length > 0 &
-                   input.outcome.length > 0 &
-                   input.exposure.length > 0 &
-                   input.subset_variable.length > 0 &
-                   input.subset_variable != 'None'",
-      prettyCheckboxGroup(
-        inputId = 'subset_value',
-        label = 'Include these subsets:',
-        choices = c(),
-        selected = NULL,
-        width = dash_input_width
-      )
-    ),
-
-    conditionalPanel(
-      condition = 'input.year.length > 0 &
-                   input.outcome.length > 0 &
-                   input.exposure.length > 0 &
-                   input.subset_variable.length > 0',
-      pickerInput(
-        inputId = 'group',
-        label = 'Select a grouping variable',
-        choices = c(),
-        selected = NULL,
-        multiple = TRUE,
-        options = pickerOptions(maxOptions = 1),
-        width = dash_input_width
-      )
-    ),
-
-    conditionalPanel(
-      condition = "(input.year.length > 0 &
+          conditionalPanel(
+            condition = "(input.year.length > 0 &
                      input.outcome.length > 0 &
-                     input.subset_variable.length == 0 | input.subset_variable == 'None') |
+                     (input.subset_variable.length == 0 | input.subset_variable == 'None')) |
                    (input.year.length > 0 &
                      input.outcome.length > 0 &
                      input.subset_value.length > 0 & input.subset_variable.length > 0)",
-      actionButton(
-        inputId =  "do_computation",
-        label = "Compute my results",
-        width = dash_sidebar_width*6.01/7,
-        icon = icon("cog"),
-        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
-      )
-    )
+            actionButton(
+              inputId =  "do_computation",
+              label = "Compute my results",
+              width = '95%',
+              icon = icon("cog"),
+              style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+            )
+          ),
+
+          conditionalPanel(
+            condition = "!((input.year.length > 0 &
+                     input.outcome.length > 0 &
+                     (input.subset_variable.length == 0 | input.subset_variable == 'None')) |
+                   (input.year.length > 0 &
+                     input.outcome.length > 0 &
+                     input.subset_value.length > 0 & input.subset_variable.length > 0))",
+            actionButton(
+              inputId =  "wont_do_computation",
+              label = "Compute my results",
+              width = '95%',
+              icon = icon("cog"),
+              style = "color: #fff; background-color: #808080; border-color: #2e6da4"
+            )
+          ),
+
+          data.step = 5,
+          data.intro = paste(
+            "When you have selected a dataset, an outcome",
+            "and at least one index year, this button will turn blue,",
+            "and clicking it will generate results in the main panel.",
+            "If the button is grey, it means at least one required input",
+            "is currently unspecified."
+          )
+        ),
+
+        br(),
+
+        introBox(
+          pickerInput(
+            inputId = 'dataset',
+            label = 'Select a dataset',
+            choices = c("racs"   = "racs",
+                        "ami"    = "ami",
+                        "stroke" = "stroke"),
+            selected = 'racs',
+            multiple = TRUE,
+            options = pickerOptions(maxOptions = 1),
+            width = input_width
+          ),
+          data.step = 2,
+          data.intro = paste(
+            "Start by selecting which dataset you'd like to analyze."
+          )
+        ),
+
+        prettyCheckboxGroup(
+          inputId = "year",
+          label = "Select index year(s)",
+          inline = TRUE,
+          selected = NULL,
+          width = input_width
+        ),
+
+        actionGroupButtons(
+          inputIds = c('select_all_years', 'deselect_all_years'),
+          labels = c("Select all", "Clear"),
+          status = 'info'
+        ),
+
+        br(),br(),
+
+        introBox(
+          pickerInput(
+            inputId = 'outcome',
+            label = 'Select an outcome',
+            choices = c(),
+            selected = NULL,
+            multiple = TRUE,
+            options = pickerOptions(maxOptions = 1),
+            width = input_width
+          ),
+          data.step = 3,
+          data.intro = paste(
+            "Next, select an outcome from one of the available options.",
+            "The 'outcome' is the variable that will be summarized in results.",
+            "In rare cases where a summary statistic for your outcome is",
+            "based on < 12 people, that statistic will not be displayed."
+          )
+        ),
+
+        introBox(
+          pickerInput(
+            inputId = 'exposure',
+            label = 'Select an exposure',
+            choices = c('None'),
+            selected = NULL,
+            multiple = TRUE,
+            options = pickerOptions(maxOptions = 1),
+            width = input_width
+          ),
+
+          pickerInput(
+            inputId = 'subset_variable',
+            label = 'Select a subsetting variable',
+            choices = c('None'),
+            selected = NULL,
+            multiple = TRUE,
+            options = pickerOptions(maxOptions = 1),
+            width = input_width
+          ),
+
+          conditionalPanel(
+            condition = "input.subset_variable.length > 0 &
+                       input.subset_variable != 'None'",
+            prettyCheckboxGroup(
+              inputId = 'subset_value',
+              label = 'Include these subsets:',
+              choices = c(),
+              selected = NULL,
+              width = input_width
+            )
+          ),
+
+          pickerInput(
+            inputId = 'group',
+            label = 'Select a grouping variable',
+            choices = c(),
+            selected = NULL,
+            multiple = TRUE,
+            options = pickerOptions(maxOptions = 1),
+            width = input_width
+          ),
+          data.step = 4,
+          data.intro = paste(
+            "Your possible choices for the exposure variable, the subset",
+            "variable, and the grouping variable are dependent on what",
+            "you select for the outcome variable and on each other. To",
+            "keep things simple, you will not see any choices for these",
+            "inputs unless you have selected a value for ALL the inputs",
+            "above them."
+          )
+        )
 
 
 
-  ),
-
-  minified = FALSE,
-  collapsed = FALSE,
-  width = dash_sidebar_width
-
-)
-
-
-ui <- dashboardPage(
-
-  options = list(sidebarExpandOnHover = TRUE),
-
-  header = dashboardHeader(titleWidth = dash_sidebar_width),
-
-  sidebar = dash_sidebar,
-
-  body = dashboardBody(
-    tabItem(
-      tabName = 'dashboard',
-      fluidRow(
-        valueBoxOutput('result_overall')
       ),
-      fluidRow(
-        gt_output('result_table')
+
+      # Show a plot of the generated distribution
+      mainPanel(
+
+        # fluidRow(valueBoxOutput('result_overall')),
+
+        fluidRow(
+          gt_output('result_table')
+        )
       )
     )
-  ),
-
-  controlbar = dashboardControlbar(),
-
-  title = "DashboardPage"
-
+  )
 )
 
-# Server ----
+  # Server ----
 
-server = function(input, output, session) {
+  server = function(input, output, session) {
 
-  dt <- reactive({
-    switch(input$dataset,
-           "racs" = dt_racs,
-           "ami" = dt_ami,
-           "stroke" = dt_stroke)
-  })
+    # initiate hints on startup with custom button and event
+    hintjs(session,
+           options = list("hintButtonLabel"="Hope this hint was helpful"),
+           events = list("onhintclose"=I('alert("Wasn\'t that hint helpful")')))
+
+    dt <- reactive({
+      switch(input$dataset,
+             "racs" = dt_racs,
+             "ami" = dt_ami,
+             "stroke" = dt_stroke)
+    })
 
   dt_years <- reactive({get_unique(dt()$year_ABDHMO)})
 
   observeEvent(input$dataset, {
 
-    # fix the current value so that freezing won't prevent ui update
-    year_current <- input$year
-
-    freezeReactiveValue(input, 'year')
+    selected <- intersect(dt_years(), input$year)
+    if(is_empty(selected))
+      selected <- max(dt_years())
 
     updatePrettyCheckboxGroup(
       inputId = 'year',
       choices = as.character(sort(dt_years())),
-      selected = as.character(intersect(dt_years(), year_current)),
+      selected = as.character(selected),
       inline = TRUE
     )
 
@@ -268,6 +309,33 @@ server = function(input, output, session) {
   observeEvent(input$deselect_all_years, {
     updatePrettyCheckboxGroup(inputId = 'year',
                               selected = character(0))
+  })
+
+  # the is_empty event has to come before the regular event.
+  # Otherwise, the downstream inputs never show up. Why?
+  observeEvent(is_empty(input$outcome), {
+
+    updatePickerInput(
+      session = session,
+      inputId = 'exposure',
+      choices = character(0),
+      selected = character(0)
+    )
+
+    updatePickerInput(
+      session = session,
+      inputId = 'subset_variable',
+      choices = character(0),
+      selected = character(0)
+    )
+
+    updatePickerInput(
+      session = session,
+      inputId = 'group',
+      choices = character(0),
+      selected = character(0)
+    )
+
   })
 
   observeEvent(input$outcome, {
@@ -330,6 +398,24 @@ server = function(input, output, session) {
 
   })
 
+  observeEvent(is_empty(input$exposure), {
+
+   updatePickerInput(
+      session = session,
+      inputId = 'subset_variable',
+      choices = character(0),
+      selected = character(0)
+    )
+
+    updatePickerInput(
+      session = session,
+      inputId = 'group',
+      choices = character(0),
+      selected = character(0)
+    )
+
+  })
+
   observeEvent(input$exposure, {
 
     subset_inputs <- key_data |>
@@ -359,6 +445,16 @@ server = function(input, output, session) {
 
   })
 
+  observeEvent(is_empty(input$subset_variable), {
+
+    updatePickerInput(
+      session = session,
+      inputId = 'group',
+      choices = character(0),
+      selected = character(0)
+    )
+
+  })
 
   observeEvent(input$subset_variable, {
 
@@ -461,81 +557,105 @@ server = function(input, output, session) {
     bindEvent(input$do_computation)
 
 
-  output$result_overall <-
-    renderValueBox(
-      valueBox(
-        table_value(result()$overall[[input$outcome]]),
-        "Overall result",
-        icon = icon("heart")
-      )
-    ) |>
-    bindEvent(input$do_computation)
+  # output$result_overall <-
+  #   renderValueBox(
+  #     valueBox(
+  #       table_value(result()$overall[[input$outcome]]),
+  #       "Overall result",
+  #       icon = icon("heart")
+  #     )
+  #   ) |>
+  #   bindEvent(input$do_computation)
 
   output$result_table <-
-    render_gt(
-      {
+    render_gt({
 
         data_gt <- result()$grouped
 
-        setnames(data_gt,
-                 old = input$outcome,
-                 new = key_list[[input$outcome]]$label)
+        dcast_lhs_variables <- c("1")
 
         if(is_used(input$exposure)){
-
-          dcast_formula <- glue(
-            "year_ABDHMO ~ {input$exposure}"
-          )
-
-          if(is_used(input$group)){
-            dcast_formula <- glue(
-              "year_ABDHMO + {input$group} ~ {input$exposure}"
-            )
-          }
-
-          data_gt <- data_gt |>
-            dcast(
-              formula = as.formula(dcast_formula),
-              value.var = key_list[[input$outcome]]$label
-            )
-
+          dcast_lhs_variables <- c(dcast_lhs_variables, input$exposure)
         }
-
-        data_gt <- data_gt |>
-          mutate(across(.cols = c(where(is.numeric), -year_ABDHMO),
-                        .fns = table_value))
 
         if(is_used(input$group)){
-          gt_out <- gt(data_gt,
-                       rowname_col = 'year_ABDHMO',
-                       groupname_col = input$group)
-        } else {
-          gt_out <- gt(data_gt,
-                       rowname_col = 'year_ABDHMO')
+          dcast_lhs_variables <- c(dcast_lhs_variables, input$group)
         }
+
+        dcast_formula_lhs <- paste(
+          dcast_lhs_variables,
+          collapse = ' + '
+        )
+
+        dcast_formula <- glue("{dcast_formula_lhs} ~ year_ABDHMO")
+
+
+        data_gt <- data_gt |>
+          dcast(
+            formula = as.formula(dcast_formula),
+            value.var = input$outcome
+          )
+
+        if('.' %in% names(data_gt)) data_gt[['.']] <- NULL
+
+
+        data_gt <- data_gt |>
+          mutate(across(.cols = where(is.numeric),
+                        .fns = table_value))
+
+
+        gt_args <- list(data = data_gt)
+
+        if(is_used(input$exposure)) gt_args$rowname_col = input$exposure
+        if(is_used(input$group)) gt_args$groupname_col = input$group
+
+        gt_out <- do.call(gt, args = gt_args)
 
         if(is_used(input$exposure)){
           gt_out <- gt_out |>
-            tab_spanner(
-              label = key_list[[input$exposure]]$label,
-              columns = as.character(
-                get_unique(result()$grouped[[input$exposure]])
-              )
-            )
+            tab_stubhead(label = key_list[[input$exposure]]$label)
         }
 
+        gt_out <- gt_out |>
+          tab_spanner(
+            label = 'Calendar year',
+            columns = as.character(input$year)
+          )
+
         gt_out |>
-          tab_stubhead(label = 'Calendar year') |>
           cols_align('center')
 
-      }
-
-    ) |>
+      }) |>
     bindEvent(input$do_computation)
 
+  # start introjs when button is pressed with custom options and events
+  observeEvent(
+    input$help, {
 
+      if(is.null(input$dataset)){
+        updatePickerInput(
+          session = session,
+          inputId = 'dataset',
+          selected = 'racs'
+        )
+      }
+    }
 
-}
+  )
+
+  observeEvent(
+    input$help, {
+
+      introjs(session,
+              options = list("nextLabel"="Next",
+                             "prevLabel"="Previous",
+                             "skipLabel"="Skip"))
+
+    }
+
+  )
+
+  }
 
 shinyApp(ui = ui, server = server)
 
