@@ -9,9 +9,18 @@
 
 # Initialize ----
 source("packages.R")
+
+key_data <- read_csv('data/key.csv')
+
+key_list <- key_data |>
+  table.glue::as_inline(
+    tbl_variables = 'variable',
+    tbl_values = setdiff(names(key_data), 'variable')
+  )
+
 for(f in list.files("R/", full.names = TRUE)) source(f)
 
-n_obs <- 1e6
+n_obs <- 1e5
 
 set.seed(329)
 
@@ -62,8 +71,6 @@ ui <- shinyUI(
 
   fluidPage(
 
-    # theme = "mytheme.css",
-
     introjsUI(),
 
     # Application title
@@ -89,12 +96,15 @@ ui <- shinyUI(
         introBox(
 
           conditionalPanel(
-            condition = "(input.year.length > 0 &
-                     input.outcome.length > 0 &
-                     (input.subset_variable.length == 0 | input.subset_variable == 'None')) |
-                   (input.year.length > 0 &
-                     input.outcome.length > 0 &
-                     input.subset_value.length > 0 & input.subset_variable.length > 0)",
+            condition =
+              "(input.year.length > 0 &
+                input.outcome.length > 0 &
+                (input.subset_variable.length == 0 | input.subset_variable == 'None'))
+                |
+              (input.year.length > 0 &
+                input.outcome.length > 0 &
+                input.subset_value.length > 0 &
+                input.subset_variable.length > 0)",
             actionButton(
               inputId =  "do_computation",
               label = "Compute my results",
@@ -354,7 +364,7 @@ ui <- shinyUI(
       selected = setdiff(input$exposure, input$outcome)
     )
 
-    if(!is.null(input$subset)){
+    if(!is.null(input$subset_variable)){
 
       subset_inputs <- key_data |>
         filter(subset,
@@ -458,6 +468,7 @@ ui <- shinyUI(
 
   observeEvent(input$subset_variable, {
 
+    # TODO: if subset_variable doesn't change, neither should subset values.
     updatePrettyCheckboxGroup(
       inputId = 'subset_value',
       choices = get_unique(dt()[[input$subset_variable]]),
@@ -528,8 +539,17 @@ ui <- shinyUI(
     if(is_used(dt_list$group))
       dt_group <- c(dt_group, dt_list$group)
 
+    dt_group_no_year <- glue::glue(
+      "keyby = .({paste(setdiff(dt_group, 'year_ABDHMO'), collapse = ', ')})"
+    )
+
     dt_group <- glue::glue(
       "keyby = .({paste(dt_group, collapse = ', ')})"
+    )
+    dt_call_no_year <- rlang::parse_expr(
+      glue::glue(
+        "dt()[{dt_subset}, {dt_make}, {dt_group_no_year}, env = dt_list]"
+      )
     )
 
     dt_call_overall <- rlang::parse_expr(
@@ -544,13 +564,10 @@ ui <- shinyUI(
       )
     )
 
-    # dont run the computations twice if there are no groups
-    overall <- eval(expr = dt_call_overall)
-    grouped <- eval(expr = dt_call_grouped)
-
     list(
-      overall = overall,
-      grouped = grouped
+      overall = eval(expr = dt_call_overall),
+      no_year = eval(expr = dt_call_no_year),
+      grouped = eval(expr = dt_call_grouped)
     )
 
   }) |>
@@ -570,7 +587,18 @@ ui <- shinyUI(
   output$result_table <-
     render_gt({
 
-        data_gt <- result()$grouped
+        data_gt <- result()$no_year |>
+          mutate(year_ABDHMO = 'Overall') |>
+          bind_rows(
+            mutate(result()$grouped,
+                   year_ABDHMO = as.character(year_ABDHMO))
+          ) |>
+          mutate(
+            year_ABDHMO = factor(
+              year_ABDHMO,
+              levels = c("Overall", paste(sort(input$year)))
+            )
+          )
 
         dcast_lhs_variables <- c("1")
 
