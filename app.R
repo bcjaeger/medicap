@@ -1,13 +1,9 @@
 #
 # This is a Shiny web application. You can run the application by clicking
 # the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
 
 # Initialize ----
+
 source("packages.R")
 
 key_data <- read_csv('data/key.csv')
@@ -258,14 +254,15 @@ ui <- shinyUI(
         # fluidRow(valueBoxOutput('result_overall')),
 
         fluidRow(
-          gt_output('result_table')
+          DT::DTOutput('result_table')
+          # gt_output('result_table')
         )
       )
     )
   )
 )
 
-  # Server ----
+# Server ----
 
   server = function(input, output, session) {
 
@@ -508,17 +505,9 @@ ui <- shinyUI(
                                              'subset_value',
                                              'group')]
 
+    # -- subsetting --
+    # data.table subset requires the values be wrapped in I()
     dt_list$year <- I(as.numeric(dt_list$year))
-
-    dt_list$f <- switch(key_list[[dt_list$outcome]]$type,
-                        'intg' = mean,
-                        'ctns' = mean,
-                        'bnry' = mean,
-                        'ttev' = mean,
-                        'catg' = stop("not yet supported"))
-
-
-    dt_make <- ".(outcome = f(outcome))"
 
     dt_subset <- "year_ABDHMO %in% year"
 
@@ -531,6 +520,24 @@ ui <- shinyUI(
                          sep = ' & ')
     }
 
+    # -- summarizing --
+
+    dt_list$f <- switch(key_list[[dt_list$outcome]]$type,
+                        'intg' = smry_ctns,
+                        'ctns' = smry_ctns,
+                        'bnry' = smry_bnry,
+                        'ttev' = smry_ttev,
+                        stop("not yet supported"))
+
+    dt_make <- ".(outcome = list(f(outcome)))"
+
+    # if outcome is time-to-event:
+    if(key_list[[dt_list$outcome]]$type == 'ttev'){
+      dt_list$time <- key_list[[dt_list$outcome]]$time
+      dt_make <- ".(outcome = list(f(outcome, time)))"
+    }
+
+    # -- grouping --
     dt_group <- c("year_ABDHMO")
 
     if(is_used(dt_list$exposure))
@@ -546,24 +553,31 @@ ui <- shinyUI(
     dt_group <- glue::glue(
       "keyby = .({paste(dt_group, collapse = ', ')})"
     )
+
+    # -- converting data.table calls to expressions --
+
     dt_call_no_year <- rlang::parse_expr(
       glue::glue(
-        "dt()[{dt_subset}, {dt_make}, {dt_group_no_year}, env = dt_list]"
+        "dt()[{dt_subset}, {dt_make}, {dt_group_no_year}, env = dt_list] |>
+          dt_unnest({dt_list$outcome})"
       )
     )
 
     dt_call_overall <- rlang::parse_expr(
       glue::glue(
-        "dt()[{dt_subset}, {dt_make}, , env = dt_list]"
+        "dt()[{dt_subset}, {dt_make}, , env = dt_list] |>
+          dt_unnest({dt_list$outcome})"
       )
     )
 
     dt_call_grouped <- rlang::parse_expr(
       glue::glue(
-        "dt()[{dt_subset}, {dt_make}, {dt_group}, env = dt_list]"
+        "dt()[{dt_subset}, {dt_make}, {dt_group}, env = dt_list] |>
+          dt_unnest({dt_list$outcome})"
       )
     )
 
+    # -- evaluate expressions and return data.table outputs --
     list(
       overall = eval(expr = dt_call_overall),
       no_year = eval(expr = dt_call_no_year),
@@ -573,88 +587,94 @@ ui <- shinyUI(
   }) |>
     bindEvent(input$do_computation)
 
-
-  # output$result_overall <-
-  #   renderValueBox(
-  #     valueBox(
-  #       table_value(result()$overall[[input$outcome]]),
-  #       "Overall result",
-  #       icon = icon("heart")
-  #     )
-  #   ) |>
-  #   bindEvent(input$do_computation)
-
   output$result_table <-
-    render_gt({
-
-        data_gt <- result()$no_year |>
-          mutate(year_ABDHMO = 'Overall') |>
-          bind_rows(
-            mutate(result()$grouped,
-                   year_ABDHMO = as.character(year_ABDHMO))
-          ) |>
-          mutate(
-            year_ABDHMO = factor(
-              year_ABDHMO,
-              levels = c("Overall", paste(sort(input$year)))
-            )
+    DT::renderDataTable({
+      result()$no_year |>
+        mutate(year_ABDHMO = 'Overall') |>
+        bind_rows(
+          mutate(result()$grouped,
+                 year_ABDHMO = as.character(year_ABDHMO))
+        ) |>
+        mutate(
+          year_ABDHMO = factor(
+            year_ABDHMO,
+            levels = c("Overall", paste(sort(input$year)))
           )
-
-        dcast_lhs_variables <- c("1")
-
-        if(is_used(input$exposure)){
-          dcast_lhs_variables <- c(dcast_lhs_variables, input$exposure)
-        }
-
-        if(is_used(input$group)){
-          dcast_lhs_variables <- c(dcast_lhs_variables, input$group)
-        }
-
-        dcast_formula_lhs <- paste(
-          dcast_lhs_variables,
-          collapse = ' + '
         )
-
-        dcast_formula <- glue("{dcast_formula_lhs} ~ year_ABDHMO")
-
-
-        data_gt <- data_gt |>
-          dcast(
-            formula = as.formula(dcast_formula),
-            value.var = input$outcome
-          )
-
-        if('.' %in% names(data_gt)) data_gt[['.']] <- NULL
-
-
-        data_gt <- data_gt |>
-          mutate(across(.cols = where(is.numeric),
-                        .fns = table_value))
-
-
-        gt_args <- list(data = data_gt)
-
-        if(is_used(input$exposure)) gt_args$rowname_col = input$exposure
-        if(is_used(input$group)) gt_args$groupname_col = input$group
-
-        gt_out <- do.call(gt, args = gt_args)
-
-        if(is_used(input$exposure)){
-          gt_out <- gt_out |>
-            tab_stubhead(label = key_list[[input$exposure]]$label)
-        }
-
-        gt_out <- gt_out |>
-          tab_spanner(
-            label = 'Calendar year',
-            columns = as.character(input$year)
-          )
-
-        gt_out |>
-          cols_align('center')
-
-      }) |>
+    }) |>
     bindEvent(input$do_computation)
+
+  # output$result_table <-
+  #   render_gt({
+  #
+  #       data_gt <- result()$no_year |>
+  #         mutate(year_ABDHMO = 'Overall') |>
+  #         bind_rows(
+  #           mutate(result()$grouped,
+  #                  year_ABDHMO = as.character(year_ABDHMO))
+  #         ) |>
+  #         mutate(
+  #           year_ABDHMO = factor(
+  #             year_ABDHMO,
+  #             levels = c("Overall", paste(sort(input$year)))
+  #           )
+  #         )
+  #
+  #       dcast_lhs_variables <- c("1")
+  #
+  #       if(is_used(input$exposure)){
+  #         dcast_lhs_variables <- c(dcast_lhs_variables, input$exposure)
+  #       }
+  #
+  #       if(is_used(input$group)){
+  #         dcast_lhs_variables <- c(dcast_lhs_variables, input$group)
+  #       }
+  #
+  #       dcast_formula_lhs <- paste(
+  #         dcast_lhs_variables,
+  #         collapse = ' + '
+  #       )
+  #
+  #       dcast_formula <- glue("{dcast_formula_lhs} ~ year_ABDHMO")
+  #
+  #
+  #       data_gt <- data_gt |>
+  #         dcast(
+  #           formula = as.formula(dcast_formula),
+  #           value.var = input$outcome
+  #         )
+  #
+  #       if('.' %in% names(data_gt)) data_gt[['.']] <- NULL
+  #
+  #
+  #       data_gt <- data_gt |>
+  #         mutate(across(.cols = where(is.numeric),
+  #                       .fns = table_value))
+  #
+  #
+  #       gt_args <- list(data = data_gt)
+  #
+  #       if(is_used(input$exposure)) gt_args$rowname_col = input$exposure
+  #       if(is_used(input$group)) gt_args$groupname_col = input$group
+  #
+  #       gt_out <- do.call(gt, args = gt_args)
+  #
+  #       if(is_used(input$exposure)){
+  #         gt_out <- gt_out |>
+  #           tab_stubhead(label = key_list[[input$exposure]]$label)
+  #       }
+  #
+  #       gt_out <- gt_out |>
+  #         tab_spanner(
+  #           label = 'Calendar year',
+  #           columns = as.character(input$year)
+  #         )
+  #
+  #       gt_out |>
+  #         cols_align('center')
+  #
+  #     }) |>
+  #   bindEvent(input$do_computation)
 
   # start introjs when button is pressed with custom options and events
   observeEvent(
