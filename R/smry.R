@@ -7,7 +7,7 @@ smry_ctns <- function(x,
                                      'se',
                                      'sd')){
 
-  if(length(x) < 12) return(
+  if(length(na.omit(x)) < 12) return(
     data.table(
       mean = NA_real_,
       quant_0 = NA_real_,
@@ -60,7 +60,12 @@ smry_bnry <- function(x,
               stat_names = stat_names)
   )
 
-  if(length(x) < 12){
+  if(is.character(x)) return(
+    smry_bnry(x = as.factor(x),
+              stat_names = stat_names)
+  )
+
+  if(length(na.omit(x)) < 12){
     return(
       data.table(
         n_event = NA_real_,
@@ -73,8 +78,8 @@ smry_bnry <- function(x,
 
   out <- list()
 
-  n_event <- sum(x)
-  n_total <- length(x)
+  n_event <- sum(x, na.rm = TRUE)
+  n_total <- length(na.omit(x))
 
   if('n_event' %in% stat_names) out$n_event <- n_event
   if('n_total' %in% stat_names) out$n_total <- n_total
@@ -91,7 +96,7 @@ smry_bnry <- function(x,
 
 smry_ttev <- function(status, time, horizon){
 
-  if(sum(status) < 12){
+  if(sum(status, na.rm = TRUE) < 12){
     return(data.table(time = NA_real_,
                       cuminc = NA_real_,
                       se = NA_real_))

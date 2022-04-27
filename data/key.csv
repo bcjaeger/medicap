@@ -1,5 +1,5 @@
 variable,type,label,outcome,exposure,subset,group,time
-year_ABDHMO,time,Follow-up duration (year),FALSE,FALSE,FALSE,FALSE,NA
+Year,time,Index year,FALSE,FALSE,FALSE,FALSE,NA
 Age,catg,"Age, years",FALSE,TRUE,TRUE,TRUE,NA
 Gender,catg,Gender,FALSE,TRUE,TRUE,TRUE,NA
 Race,catg,Race,FALSE,TRUE,TRUE,TRUE,NA
