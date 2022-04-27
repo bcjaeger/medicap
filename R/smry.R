@@ -1,10 +1,24 @@
 
 
+
 smry_ctns <- function(x,
                       stat_names = c('mean',
                                      'quantile',
                                      'se',
                                      'sd')){
+
+  if(length(x) < 12) return(
+    data.table(
+      mean = NA_real_,
+      quant_0 = NA_real_,
+      quant_25 = NA_real_,
+      quant_50 = NA_real_,
+      quant_75 = NA_real_,
+      quant_100 = NA_real_,
+      sd = NA_real_,
+      se = NA_real_
+    )
+  )
 
   out <- list()
 
@@ -46,6 +60,17 @@ smry_bnry <- function(x,
               stat_names = stat_names)
   )
 
+  if(length(x) < 12){
+    return(
+      data.table(
+        n_event = NA_real_,
+        n_total = NA_real_,
+        prevalence = NA_real_,
+        odds = NA_real_
+      )
+    )
+  }
+
   out <- list()
 
   n_event <- sum(x)
@@ -66,10 +91,10 @@ smry_bnry <- function(x,
 
 smry_ttev <- function(status, time, horizon){
 
-  if(sum(status) < 1){
-    return(data.table(time = sort(unique(time)),
-                      cuminc = 0,
-                      se = 0))
+  if(sum(status) < 12){
+    return(data.table(time = NA_real_,
+                      cuminc = NA_real_,
+                      se = NA_real_))
   }
 
   out <- cuminc(ftime = time, fstatus = status) |>

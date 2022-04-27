@@ -15,7 +15,7 @@ tabulate_input_list <- list(
     condition = "input.statistic.length > 0",
     actionButton(
       inputId =  "do_tabulate",
-      label = "Tabulate my results",
+      label = "Tabulate",
       width = '94.5%',
       icon = icon("cog"),
       style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
@@ -25,12 +25,14 @@ tabulate_input_list <- list(
     condition = 'input.statistic.length == 0',
     actionButton(
       inputId =  "wont_do_tabulate",
-      label = "Tabulate my results",
+      label = "Tabulate",
       width = '94.5%',
       icon = icon("cog"),
       style = "color: #fff; background-color: #808080; border-color: #2e6da4"
     )
-  )
+  ),
+  br(),
+  uiOutput('dl_table')
 )
 
 

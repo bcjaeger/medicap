@@ -33,7 +33,7 @@ dataSummarizerInput <- function(id,
         ns = ns,
         actionButton(
           inputId =  ns("do_computation"),
-          label = "Compute my results",
+          label = "Compute",
           width = '95%',
           icon = icon("cog"),
           style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
@@ -45,13 +45,13 @@ dataSummarizerInput <- function(id,
         ns = ns,
         actionButton(
           inputId =  ns("wont_do_computation"),
-          label = "Compute my results",
+          label = "Compute",
           width = '95%',
           icon = icon("cog"),
           style = "color: #fff; background-color: #808080; border-color: #2e6da4"
         )
       ),
-      data.step = 4,
+      data.step = 5,
       data.intro = paste(
         "When you have selected a dataset, an outcome",
         "and at least one index year, this button will turn blue,",
@@ -75,7 +75,7 @@ dataSummarizerInput <- function(id,
         options = pickerOptions(maxOptions = 1),
         width = input_width
       ),
-      data.step = 1,
+      data.step = 2,
       data.intro = paste(
         "Start by selecting which dataset you'd like to analyze."
       )
@@ -111,7 +111,7 @@ dataSummarizerInput <- function(id,
         options = pickerOptions(maxOptions = 1),
         width = input_width
       ),
-      data.step = 2,
+      data.step = 3,
       data.intro = paste(
         "Next, select an outcome from one of the available options.",
         "The 'outcome' is the variable that will be summarized in results.",
@@ -192,7 +192,7 @@ dataSummarizerInput <- function(id,
         options = pickerOptions(maxOptions = 1),
         width = input_width
       ),
-      data.step = 3,
+      data.step = 4,
       data.intro = paste(
         "Your possible choices for the exposure variable, the subset",
         "variable, and the grouping variable are dependent on what",
@@ -455,6 +455,7 @@ dataSummarizerServer <- function(id,
 
     result <- reactive({
 
+
       dt_list <- reactiveValuesToList(input)[c('year',
                                                'outcome',
                                                'exposure',
@@ -494,19 +495,27 @@ dataSummarizerServer <- function(id,
 
       # if(input$n_group == "4") browser()
 
-      if(key_list[[input$exposure]]$type == 'ctns'){
+      # browser()
 
-        dt_subsetted[,
-                     exposure := cut_percentile(
-                       exposure,
-                       dt_list$n_group
-                     ),
-                     env = dt_list['exposure']]
+      if(is_used(input$exposure)){
 
-        # modifying the subset by reference doesn't modify the parent
-        # so this transform does not change values in the original dt.
+        if(key_list[[input$exposure]]$type == 'ctns'){
+
+          dt_subsetted[,
+                       exposure := cut_percentile(
+                         exposure,
+                         dt_list$n_group
+                       ),
+                       env = dt_list['exposure']]
+
+          # modifying the subset by reference doesn't modify the parent
+          # so this transform does not change values in the original dt.
+
+        }
 
       }
+
+
 
       # -- summarizing --
 
