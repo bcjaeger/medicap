@@ -1,0 +1,9 @@
+variable,type,label,outcome,exposure,subset,group,time
+year_ABDHMO,time,Follow-up duration (year),FALSE,FALSE,FALSE,FALSE,NA
+Age,catg,"Age, years",FALSE,TRUE,TRUE,TRUE,NA
+Gender,catg,Gender,FALSE,TRUE,TRUE,TRUE,NA
+Race,catg,Race,FALSE,TRUE,TRUE,TRUE,NA
+Pre_index_statin_intensity,ctns,Statin intensity for prevalent users,TRUE,TRUE,FALSE,TRUE,NA
+Pre_index_statin,bnry,Prevalent statin use,TRUE,TRUE,TRUE,TRUE,NA
+Post_index_statin,ttev,Statin use during follow-up,TRUE,FALSE,FALSE,FALSE,Post_index_statin_days
+Pre_index_PCSK9i_dose,ctns,Dose of prevalent PCSK9 Inhibitor,TRUE,FALSE,FALSE,FALSE,NA
