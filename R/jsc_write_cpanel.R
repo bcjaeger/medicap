@@ -15,8 +15,12 @@ jsc_write_cpanel <- function(key_data, var_type, var_role){
     filter(type == var_type, .data[[var_role]]) |>
     pull(variable)
 
+  if(is_empty(variable_names))
+    return("false")
+
   c_init <- glue("input.{var_role} == '{variable_names}'") |>
     glue_collapse(sep = ' | ')
+
 
   glue("input.{var_role}.length > 0 & ({c_init})")
 

@@ -37,19 +37,30 @@ key_list <- key_data |>
     tbl_values = setdiff(names(key_data), 'variable')
   )
 
-# using fake data: ----
+use_fake <- TRUE
 
-n_obs <- 1e5
+if(use_fake){
 
-set.seed(329)
+  # using fake data: ----
 
-# using real data: ----
+  n_obs <- 1e5
 
-path_to_data <- file.path("Z:", "Users", "Ligong", "Shiny app", "shiny")
+  dt_list <- load_dt_fake(n_obs)
+  dt_racs <- dt_list$dt_racs
+  dt_ami <- dt_list$dt_ami
+  dt_stroke <- dt_list$dt_stroke
 
-dt_racs <- load_dt_racs(path_to_data)
-dt_ami <- load_dt_ami(path_to_data)
-dt_stroke <- load_dt_stroke(path_to_data)
+} else {
+
+  # using real data: ----
+
+  path_to_data <- file.path("Z:", "Users", "Ligong", "Shiny app", "shiny")
+
+  dt_racs <- load_dt_racs(path_to_data)
+  dt_ami <- load_dt_ami(path_to_data)
+  dt_stroke <- load_dt_stroke(path_to_data)
+
+}
 
 # UI ----
 

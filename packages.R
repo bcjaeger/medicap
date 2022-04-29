@@ -20,3 +20,4 @@ library(conflicted)
 
 conflict_prefer(':=', 'data.table')
 conflict_prefer("filter", "dplyr")
+conflict_prefer("renderDataTable", "DT")

@@ -13,17 +13,22 @@ dataSummarizerInput <- function(id,
                   gregexpr("\\(.*?\\)", ctns_condition))[[1]])
 
   compute_ready <- glue(
-    "((input.year.length > 0 &
+    "(input.year.length > 0 &
        input.outcome.length > 0 &
        (input.subset_variable.length == 0 | input.subset_variable == 'None'))
     |
     (input.year.length > 0 &
        input.outcome.length > 0 &
        input.subset_value.length > 0 &
-       input.subset_variable.length > 0))
-    &
-    ( !({ctns_condition_parenthetical}) | input.n_group.length > 0 )"
+       input.subset_variable.length > 0)"
   )
+
+  if(!is_empty(ctns_condition_parenthetical)){
+    compute_ready <- glue(
+      "( {compute_ready} ) &
+       ( !({ctns_condition_parenthetical}) | input.n_group.length > 0 )"
+    )
+  }
 
   tagList(
 
@@ -521,6 +526,7 @@ dataSummarizerServer <- function(id,
 
       dt_list$f <- switch(key_list[[dt_list$outcome]]$type,
                           'intg' = smry_ctns,
+                          'ordn' = smry_ctns,
                           'ctns' = smry_ctns,
                           'bnry' = smry_bnry,
                           'ttev' = smry_ttev,
