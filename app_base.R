@@ -37,7 +37,7 @@ key_list <- key_data |>
     tbl_values = setdiff(names(key_data), 'variable')
   )
 
-use_fake <- TRUE
+use_fake <- FALSE
 
 if(use_fake){
 
@@ -61,6 +61,10 @@ if(use_fake){
   dt_stroke <- load_dt_stroke(path_to_data)
 
 }
+
+dt_racs %>%
+  select(-starts_with("Post_index"), -ends_with("days"), -ends_with("dt")) %>%
+  map(unique)
 
 # UI ----
 

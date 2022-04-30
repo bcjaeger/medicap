@@ -7,6 +7,16 @@ smry_ctns <- function(x,
                                      'se',
                                      'sd')){
 
+  if(is.factor(x)) return(
+    smry_ctns(x = as.numeric(x)-1,
+              stat_names = stat_names)
+  )
+
+  if(is.character(x)) return(
+    smry_ctns(x = as.factor(x),
+              stat_names = stat_names)
+  )
+
   if(length(na.omit(x)) < 12) return(
     data.table(
       mean = NA_real_,

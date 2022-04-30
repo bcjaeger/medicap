@@ -151,7 +151,8 @@ load_dt_ami <- function(path_to_data) {
                                "1" = "Yes"),
       Post_index_cardiac_rehab = recode(Post_index_cardiac_rehab,
                                         "0" = "No",
-                                        "1" = "Yes")
+                                        "1" = "Yes"),
+      across(where(is.character), as.factor)
     )
 
 }
