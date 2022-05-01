@@ -37,7 +37,7 @@ key_list <- key_data |>
     tbl_values = setdiff(names(key_data), 'variable')
   )
 
-use_fake <- FALSE
+use_fake <- TRUE
 
 if(use_fake){
 
@@ -61,10 +61,6 @@ if(use_fake){
   dt_stroke <- load_dt_stroke(path_to_data)
 
 }
-
-dt_racs %>%
-  select(-starts_with("Post_index"), -ends_with("days"), -ends_with("dt")) %>%
-  map(unique)
 
 # UI ----
 
@@ -183,10 +179,34 @@ server = function(input, output, session) {
       )
 
       # DataTable output of result(), no modifications needed
-      output$result_table <- renderDataTable(result())
+      # browser()
+
+      output$result_table <- renderDataTable(
+        datatable({
+          result()
+        },
+        options = list(
+          lengthMenu = list(c(5,15,20),c('5','15','20')),
+          pageLength = 10,
+          initComplete = JS(
+            "function(settings, json) {",
+            "$(this.api().table().header()).css({'background-color': '#337ab7', 'color': '#FFFFFF'});",
+            "}"
+          ),
+          columnDefs=list(list(className='dt-center',targets="_all"))
+        ),
+        filter = "top",
+        selection = 'multiple',
+        style = 'bootstrap',
+        class = 'cell-border stripe',
+        rownames = FALSE,
+        colnames = recode(names(result()), !!!stat_recoder)
+        )
+      )
 
       # the statistics that a user can tabulate are updated to
       # reflect the statistic names in the new result() object
+
       choices_stat <- names(result()) |>
         recode(!!!stat_recoder, .default = NA_character_) |>
         na.omit()
@@ -245,13 +265,11 @@ server = function(input, output, session) {
 
           .by <- setdiff(.gt_cols, .stat)
 
-          data_gt <- data_gt[
-            result()[, .I[which.max(time)], by = .by]$V1
-          ]
+          data_gt <- data_gt[, .SD[.N], by = .by]
 
         }
 
-        if(.stat %in% c('prevalence', 'cuminc')){
+        if(.stat %in% c('bnry_prevalence', 'inc_cumulative_est')){
           data_gt[, stat := stat * 100, env = list(stat = .stat)]
         }
 

@@ -3,7 +3,27 @@ Year,time,Index year,FALSE,FALSE,FALSE,FALSE,NA
 Age,catg,"Age, years",FALSE,TRUE,TRUE,TRUE,NA
 Gender,catg,Gender,FALSE,TRUE,TRUE,TRUE,NA
 Race,catg,Race,FALSE,TRUE,TRUE,TRUE,NA
-Pre_index_statin_intensity,ordn,Statin intensity for prevalent users,TRUE,TRUE,FALSE,TRUE,NA
+Pre_index_statin_intensity,catg,Statin intensity for prevalent users,FALSE,TRUE,FALSE,TRUE,NA
 Pre_index_statin,bnry,Prevalent statin use,TRUE,TRUE,TRUE,TRUE,NA
 Post_index_statin,ttev,Statin use during follow-up,TRUE,FALSE,FALSE,FALSE,Post_index_statin_days
-Pre_index_PCSK9i_dose,ctns,Dose of prevalent PCSK9 Inhibitor,TRUE,FALSE,FALSE,FALSE,NA
+Pre_index_PCSK9i_dose,catg,Dose of prevalent PCSK9 Inhibitor,FALSE,FALSE,FALSE,FALSE,NA
+Pre_index_ezetimibe,bnry,Prevalent ezetimibe use,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_PCSK9i,bnry,Prevalent PCSK9i use,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_alirocumab_dose,catg,Dose of prevalent evolocumab,FALSE,TRUE,TRUE,TRUE,NA
+Pre_index_alirocumab,bnry,Prevalent alirocumab use,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_evolocumab_dose,catg,Dose of prevalent evolocumab,FALSE,TRUE,TRUE,TRUE,NA
+Pre_index_evolocumab,bnry,Prevalent evolocumab use,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_hypertension,bnry,Prevalence of hypertension,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_depression,bnry,Prevalence of depression,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_diabetes,bnry,Prevalence of diabetes,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_CKD,bnry,Prevalence of chronic kidney disease,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_CHD,bnry,Prevalence of coronary heart disease,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_MI,bnry,Prevalence of myocardial infarction,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_CABG_PCI,bnry,Prior coronary revascularization procedure,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_smoking,bnry,Prevalence of smoking,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_cardiologist_visit,bnry,Prior cardiologist care,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_HF,bnry,Prevalence of heart failure,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_LEAD,bnry,Prevalence of lower extremity arterial disease,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_ischemic_stroke,bnry,Prevalence of stroke,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_ASCVD,bnry,History of atherosclerotic cardiovascular disease,TRUE,TRUE,TRUE,TRUE,NA
+year_ABDHMO,ctns,Follow-up duration (year),TRUE,TRUE,TRUE,TRUE,NA
