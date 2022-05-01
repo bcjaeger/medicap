@@ -1,38 +1,36 @@
 
 
-
 smry_ctns <- function(x,
-                      stat_names = c('mean',
+                      stat_names = c('mean_est',
                                      'quantile',
                                      'se',
                                      'sd')){
+  UseMethod('smry_ctns')
 
-  if(is.factor(x)) return(
-    smry_ctns(x = as.numeric(x)-1,
-              stat_names = stat_names)
-  )
+}
 
-  if(is.character(x)) return(
-    smry_ctns(x = as.factor(x),
-              stat_names = stat_names)
-  )
+smry_ctns.numeric <- function(x,
+                              stat_names = c('mean_est',
+                                             'quantile',
+                                             'se',
+                                             'sd')){
 
   if(length(na.omit(x)) < 12) return(
     data.table(
-      mean = NA_real_,
-      quant_0 = NA_real_,
-      quant_25 = NA_real_,
-      quant_50 = NA_real_,
-      quant_75 = NA_real_,
-      quant_100 = NA_real_,
-      sd = NA_real_,
-      se = NA_real_
+      ctns_mean_est = NA_real_,
+      ctns_quant_0 = NA_real_,
+      ctns_quant_25 = NA_real_,
+      ctns_quant_50 = NA_real_,
+      ctns_quant_75 = NA_real_,
+      ctns_quant_100 = NA_real_,
+      ctns_sd = NA_real_,
+      ctns_se = NA_real_
     )
   )
 
   out <- list()
 
-  if('mean' %in% stat_names) out$mean <- mean(x, na.rm = TRUE)
+  if('mean_est' %in% stat_names) out$mean_est <- mean(x, na.rm = TRUE)
 
   if('quantile' %in% stat_names){
 
@@ -55,9 +53,32 @@ smry_ctns <- function(x,
 
   }
 
+  names(out) <- paste('ctns', names(out), sep = '_')
+
   as.data.table(out)
 
 }
+
+smry_ctns.character <- function(x,
+                      stat_names = c('mean_est',
+                                     'quantile',
+                                     'se',
+                                     'sd')){
+
+  smry_ctns(x = as.factor(x), stat_names = stat_names)
+
+}
+smry_ctns.factor <- function(x,
+                      stat_names = c('mean_est',
+                                     'quantile',
+                                     'se',
+                                     'sd')){
+
+  smry_ctns(x = as.numeric(x)-1, stat_names = stat_names)
+
+}
+
+
 
 smry_bnry <- function(x,
                       stat_names = c('n_event',
@@ -78,10 +99,10 @@ smry_bnry <- function(x,
   if(length(na.omit(x)) < 12){
     return(
       data.table(
-        n_event = NA_real_,
-        n_total = NA_real_,
-        prevalence = NA_real_,
-        odds = NA_real_
+        bnry_n_event = NA_real_,
+        bnry_n_total = NA_real_,
+        bnry_prevalence = NA_real_,
+        bnry_odds = NA_real_
       )
     )
   }
@@ -100,17 +121,25 @@ smry_bnry <- function(x,
 
   if('odds' %in% stat_names) out$odds <- prevalence / (1-prevalence)
 
+  names(out) <- paste('bnry', names(out), sep = '_')
+
   as.data.table(out)
 
 }
 
-smry_ttev <- function(status, time, horizon){
+smry_ttev <- function(status,
+                      time,
+                      horizon,
+                      crude_inc_mult_by = 365.25 * 1000){
 
   if(sum(status, na.rm = TRUE) < 12){
-    return(data.table(time = NA_real_,
-                      cuminc = NA_real_,
-                      se = NA_real_))
+    return(data.table(ttev_time = NA_real_,
+                      ttev_inc_cumulative_est = NA_real_,
+                      ttev_inc_cumulative_se = NA_real_,
+                      ttev_inc_crude_est = NA_real_))
   }
+
+
 
   out <- cuminc(ftime = time, fstatus = status) |>
     getElement(1) |>
@@ -118,9 +147,28 @@ smry_ttev <- function(status, time, horizon){
 
   out[, var:= sqrt(var)]
 
-  setnames(out, old = 'var', new = 'se')
-  setnames(out, old = 'est', new = 'cuminc')
+  setnames(out, old = 'var', new = 'inc_cumulative_se')
+  setnames(out, old = 'est', new = 'inc_cumulative_est')
 
-  out[time < horizon]
+  time_past_horizon <- which(time > horizon)
+
+  .time <- time
+  .time[time_past_horizon] <- horizon
+
+  .status <- status
+  .status[time_past_horizon] <- 0
+
+  index_keep <- out[time <= horizon, .I]
+
+  out[['inc_crude_est']] <- NA_real_
+
+  out[index_keep[length(index_keep)],
+             inc_crude_est := crude_inc_mult_by *
+               sum(.status, na.rm = TRUE) /
+               sum(.time, na.rm = TRUE)]
+
+  names(out) <- paste('ttev', names(out), sep = '_')
+
+  out[index_keep]
 
 }

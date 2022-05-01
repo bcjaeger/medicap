@@ -486,6 +486,7 @@ dataSummarizerServer <- function(id,
                            sep = ' & ')
       }
 
+      # browser()
 
       # only subset the data once, without copying any data
       dt_subsetted <- glue("dt()[{dt_subset}, env = dt_list]") |>

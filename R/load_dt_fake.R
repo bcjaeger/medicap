@@ -8,42 +8,34 @@ load_dt_fake <- function(n_obs) {
 
   set.seed(329)
 
+  guide <- read_rds('data/fake_data_guide.rds')
+
+  guide$Year <- NULL
+
   dt_fake <- data.table(
-    Year = sample(2007:2019, size = n_obs, replace = TRUE),
-    Age = sample(1:5, size = n_obs, replace = TRUE),
-    Gender = sample(1:2, size = n_obs, replace = TRUE),
-    Race = sample(0:6, size = n_obs, replace = TRUE)
+    Year = sample(2007:2019, size = n_obs, replace = TRUE)
   )
 
-  dt_fake[, Pre_index_statin_intensity := sample(x = c(0, 1, 2),
-                                                 size = n_obs,
-                                                 replace = TRUE)]
+  for(i in names(guide)){
 
-  dt_fake[, Pre_index_statin := rbinom(n_obs, size = 1, prob = Gender/3)]
-  dt_fake[, Post_index_statin := rbinom(n_obs, size = 1, prob = Race/sum(0:6))]
-  dt_fake[, Post_index_statin_days := abs(round(rnorm(n_obs, mean = 180, sd = 50)))]
+    dt_fake[[i]] <- sample(guide[[i]],
+                           size = n_obs,
+                           replace = TRUE)
 
-  dt_fake[, Age := factor(Age,
-                          levels = 1:5,
-                          labels = c("65-69",
-                                     "70-74",
-                                     "75-79",
-                                     "80-84",
-                                     "85+"))]
+    if(is.factor(guide[[i]])){
 
-  dt_fake[, Gender := factor(Gender,
-                             levels = 1:2,
-                             labels = c("Male", "Female"))]
+      l <- levels(guide[[i]])
+      dt_fake[, f := factor(f, levels = l), env = list(f = i)]
 
-  dt_fake[, Race := factor(Race,
-                           levels = 0:6,
-                           labels = c("Unknown",
-                                      "White",
-                                      "Black",
-                                      "Other",
-                                      "Asian",
-                                      "Hispanic",
-                                      "Native"))]
+    }
+
+  }
+
+  dt_fake[['Post_index_statin']] <-
+    rbinom(n_obs, size = 1, prob = 1/2)
+
+  dt_fake[['Post_index_statin_days']]<-
+    abs(round(rnorm(n_obs, mean = 180, sd = 50)))
 
   list(dt_stroke = copy(dt_fake),
        dt_ami = copy(dt_fake),
