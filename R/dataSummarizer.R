@@ -1,25 +1,38 @@
 
 
 
-dataSummarizerInput <- function(id,
-                                input_width = '97.5%',
-                                ttev_condition,
-                                ctns_condition) {
+dataSummarizerInput <- function(
+    id,
+    input_width = '97.5%',
+    ttev_condition,
+    ctns_condition,
+    do_compute_label,
+    include_stat_picker = FALSE
+) {
 
   ns <- NS(id)
+
+  stat_picker_condition <- tolower(as.character(include_stat_picker))
+
+  stat_picker_compute_addon <- switch(stat_picker_condition,
+                                      'true' = 'input.statistic.length > 0 &',
+                                      'false' = '')
 
   ctns_condition_parenthetical <- gsub("[\\(\\)]", "",
        regmatches(ctns_condition,
                   gregexpr("\\(.*?\\)", ctns_condition))[[1]])
 
+
   compute_ready <- glue(
     "(input.year.length > 0 &
        input.outcome.length > 0 &
+       {stat_picker_compute_addon}
        (input.subset_variable.length == 0 | input.subset_variable == 'None'))
     |
     (input.year.length > 0 &
        input.outcome.length > 0 &
        input.subset_value.length > 0 &
+       {stat_picker_compute_addon}
        input.subset_variable.length > 0)"
   )
 
@@ -32,58 +45,25 @@ dataSummarizerInput <- function(id,
 
   tagList(
 
-    introBox(
-      conditionalPanel(
-        condition = compute_ready,
-        ns = ns,
-        actionButton(
-          inputId =  ns("do_computation"),
-          label = "Compute",
-          width = '95%',
-          icon = icon("cog"),
-          style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
-        )
-      ),
+    introjsUI(),
 
-      conditionalPanel(
-        condition = paste("!(", compute_ready, ")", sep = ''),
-        ns = ns,
-        actionButton(
-          inputId =  ns("wont_do_computation"),
-          label = "Compute",
-          width = '95%',
-          icon = icon("cog"),
-          style = "color: #fff; background-color: #808080; border-color: #2e6da4"
-        )
-      ),
-      data.step = 5,
-      data.intro = paste(
-        "When you have selected a dataset, an outcome",
-        "and at least one index year, this button will turn blue,",
-        "and clicking it will generate results in the main panel.",
-        "If the button is grey, it means at least one required input",
-        "is currently unspecified."
-      )
-    ),
+    actionButton(inputId = ns("help"),
+                 "Press for instructions",
+                 icon = icon("question"),
+                 width = '95%'),
 
-    HTML('<br>'),
+    HTML('<br>'), HTML('<br>'),
 
-    introBox(
-      pickerInput(
-        inputId = ns('dataset'),
-        label = 'Select a dataset',
-        choices = c("racs"   = "racs",
-                    "ami"    = "ami",
-                    "stroke" = "stroke"),
-        selected = 'racs',
-        multiple = TRUE,
-        options = pickerOptions(maxOptions = 1),
-        width = input_width
-      ),
-      data.step = 2,
-      data.intro = paste(
-        "Start by selecting which dataset you'd like to analyze."
-      )
+    pickerInput(
+      inputId = ns('dataset'),
+      label = 'Select a dataset',
+      choices = c("racs"   = "racs",
+                  "ami"    = "ami",
+                  "stroke" = "stroke"),
+      selected = 'racs',
+      multiple = TRUE,
+      options = pickerOptions(maxOptions = 1),
+      width = input_width
     ),
 
     prettyCheckboxGroup(
@@ -106,23 +86,15 @@ dataSummarizerInput <- function(id,
 
     HTML('<br>'),HTML('<br>'),
 
-    introBox(
-      pickerInput(
-        inputId = ns('outcome'),
-        label = 'Select an outcome',
-        choices = c(),
-        selected = NULL,
-        multiple = TRUE,
-        options = pickerOptions(maxOptions = 1),
-        width = input_width
-      ),
-      data.step = 3,
-      data.intro = paste(
-        "Next, select an outcome from one of the available options.",
-        "The 'outcome' is the variable that will be summarized in results.",
-        "In rare cases where a summary statistic for your outcome is",
-        "based on < 12 people, that statistic will not be displayed."
-      )
+
+    pickerInput(
+      inputId = ns('outcome'),
+      label = 'Select an outcome',
+      choices = c(),
+      selected = NULL,
+      multiple = TRUE,
+      options = pickerOptions(maxOptions = 1),
+      width = input_width
     ),
 
     conditionalPanel(
@@ -140,86 +112,135 @@ dataSummarizerInput <- function(id,
       )
     ),
 
-    introBox(
+    conditionalPanel(
+      condition = stat_picker_condition,
+      ns = ns,
       pickerInput(
-        inputId = ns('exposure'),
-        label = 'Select an exposure',
-        choices = c('None'),
-        selected = NULL,
-        multiple = TRUE,
-        options = pickerOptions(maxOptions = 1),
-        width = input_width
-      ),
-
-      conditionalPanel(
-        condition = ctns_condition,
-        ns = ns,
-        pickerInput(
-          inputId = ns('n_group'),
-          label = 'Select number of groups',
-          choices = c(2, 3, 4),
-          selected = 3,
-          multiple = TRUE,
-          options = pickerOptions(maxOptions = 1),
-          width = input_width
-        )
-      ),
-
-      pickerInput(
-        inputId = ns('subset_variable'),
-        label = 'Select a subsetting variable',
-        choices = c('None'),
-        selected = NULL,
-        multiple = TRUE,
-        options = pickerOptions(maxOptions = 1),
-        width = input_width
-      ),
-
-      conditionalPanel(
-        condition = "input.subset_variable.length > 0 &
-                     input.subset_variable != 'None'",
-        ns = ns,
-        prettyCheckboxGroup(
-          inputId = ns('subset_value'),
-          label = 'Include these subsets:',
-          choices = c(),
-          selected = NULL,
-          width = input_width
-        )
-      ),
-
-      pickerInput(
-        inputId = ns('group'),
-        label = 'Select a grouping variable',
+        inputId = ns('statistic'),
+        label = 'Select a statistic to tabulate',
         choices = c(),
         selected = NULL,
         multiple = TRUE,
         options = pickerOptions(maxOptions = 1),
+        width = "97%"
+      )
+    ),
+
+    pickerInput(
+      inputId = ns('exposure'),
+      label = 'Select an exposure',
+      choices = c('None'),
+      selected = NULL,
+      multiple = TRUE,
+      options = pickerOptions(maxOptions = 1),
+      width = input_width
+    ),
+
+    conditionalPanel(
+      condition = ctns_condition,
+      ns = ns,
+      pickerInput(
+        inputId = ns('n_group'),
+        label = 'Select number of groups',
+        choices = c(2, 3, 4),
+        selected = 3,
+        multiple = TRUE,
+        options = pickerOptions(maxOptions = 1),
         width = input_width
+      )
+    ),
+
+    pickerInput(
+      inputId = ns('subset_variable'),
+      label = 'Select a subsetting variable',
+      choices = c('None'),
+      selected = NULL,
+      multiple = TRUE,
+      options = pickerOptions(maxOptions = 1),
+      width = input_width
+    ),
+
+    conditionalPanel(
+      condition = "input.subset_variable.length > 0 &
+                     input.subset_variable != 'None'",
+      ns = ns,
+      prettyCheckboxGroup(
+        inputId = ns('subset_value'),
+        label = 'Include these subsets:',
+        choices = c(),
+        selected = NULL,
+        width = input_width
+      )
+    ),
+
+    pickerInput(
+      inputId = ns('group'),
+      label = 'Select a grouping variable',
+      choices = c(),
+      selected = NULL,
+      multiple = TRUE,
+      options = pickerOptions(maxOptions = 1),
+      width = input_width
+    ),
+
+
+
+    div(
+      id = ns("box_do_computation"),
+      conditionalPanel(
+        condition = compute_ready,
+        ns = ns,
+        actionButton(
+          inputId =  ns("do_computation"),
+          label = do_compute_label,
+          width = '95%',
+          icon = icon("cog"),
+          style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+        )
       ),
-      data.step = 4,
-      data.intro = paste(
-        "Your possible choices for the exposure variable, the subset",
-        "variable, and the grouping variable are dependent on what",
-        "you select for the outcome variable and on each other. To",
-        "keep things simple, you will not see any choices for these",
-        "inputs unless you have selected a value for ALL the inputs",
-        "above them."
+
+      conditionalPanel(
+        condition = paste("!(", compute_ready, ")", sep = ''),
+        ns = ns,
+        actionButton(
+          inputId =  ns("wont_do_computation"),
+          label = do_compute_label,
+          width = '95%',
+          icon = icon("cog"),
+          style = "color: #fff; background-color: #808080; border-color: #2e6da4"
+        )
       )
     )
 
   )
 }
 
-dataSummarizerServer <- function(id,
-                                 dt_racs,
-                                 dt_ami,
-                                 dt_stroke,
-                                 key_data,
-                                 key_list,
-                                 key_time) {
+dataSummarizerServer <- function(
+    id,
+    dt_racs,
+    dt_ami,
+    dt_stroke,
+    key_data,
+    key_list,
+    key_time,
+    help_intro = c(
+      "A helping button" = "help",
+      "A computing button" = "box_do_computation"
+    ),
+    include_stat_picker = FALSE
+) {
 
   moduleServer(id, function(input, output, session) {
+
+    intro <- reactive(
+      data.frame(
+        element = paste0(
+          "#",
+          session$ns(help_intro)
+        ),
+        intro = names(help_intro)
+      )
+    )
 
     dt <- reactive({
       switch(input$dataset,
@@ -292,6 +313,13 @@ dataSummarizerServer <- function(id,
 
       updatePickerInput(
         session = session,
+        inputId = 'statistic',
+        choices = character(0),
+        selected = character(0)
+      )
+
+      updatePickerInput(
+        session = session,
         inputId = 'subset_variable',
         choices = character(0),
         selected = character(0)
@@ -308,60 +336,156 @@ dataSummarizerServer <- function(id,
 
     observeEvent(input$outcome, {
 
-      exposure_inputs <- key_data |>
-        filter(exposure,
-               variable %in% setdiff(names(dt()),
-                                     input$outcome)) |>
-        select(label, variable) |>
-        deframe()
+      if(include_stat_picker){
 
-      updatePickerInput(
-        session = session,
-        inputId = 'exposure',
-        choices = c("None", exposure_inputs),
-        selected = setdiff(input$exposure, input$outcome)
-      )
+        # the statistics for tabulation are updated based on the outcome
+        stat_inputs <- enframe(stat_recoder) |>
+          filter(
+            str_detect(
+              string = name,
+              pattern = paste0("^", key_list[[input$outcome]]$type)
+            )
+          ) |>
+          relocate(name, .after = value) |>
+          deframe()
+
+        # but the updated choices are only applied if they need to be.
+        # if there is no current statistic selected -> update
+        # if the current statistic is not one of the new choices -> update
+        # TODO: make statistic names (not labels) unique based on outcome type
+        if(input$statistic %!in% stat_inputs || is_empty(input$statistic)){
+
+          updatePickerInput(
+            session = session,
+            inputId = 'statistic',
+            choices = stat_inputs,
+            selected = character(0)
+          )
+
+        }
 
 
-      if(!is.null(input$subset_variable)){
+      } else {
 
-        subset_inputs <- key_data |>
-          filter(subset,
-                 variable %in% setdiff(names(dt()), c(input$outcome))) |>
+        exposure_inputs <- key_data |>
+          filter(exposure,
+                 variable %in% setdiff(names(dt()),
+                                       input$outcome)) |>
           select(label, variable) |>
           deframe()
 
-        subset_selected <- setdiff(input$subset_variable, c(input$outcome))
-
         updatePickerInput(
           session = session,
-          inputId = 'subset_variable',
-          choices = c("None", subset_inputs),
-          selected = subset_selected
+          inputId = 'exposure',
+          choices = c("None", exposure_inputs),
+          selected = setdiff(input$exposure, input$outcome)
         )
+
+        if(!is.null(input$subset_variable)){
+
+          subset_inputs <- key_data |>
+            filter(subset,
+                   variable %in% setdiff(names(dt()), c(input$outcome))) |>
+            select(label, variable) |>
+            deframe()
+
+          subset_selected <- setdiff(input$subset_variable, c(input$outcome))
+
+          updatePickerInput(
+            session = session,
+            inputId = 'subset_variable',
+            choices = c("None", subset_inputs),
+            selected = subset_selected
+          )
+
+        }
+
+        if(!is.null(input$group)){
+
+          group_inputs <- key_data |>
+            filter(group,
+                   variable %in% setdiff(names(dt()),
+                                         c(input$outcome,
+                                           input$exposure))) |>
+            select(label, variable) |>
+            deframe()
+
+          group_selected <- setdiff(input$group,
+                                    c(input$outcome,
+                                      input$exposure))
+
+          updatePickerInput(
+            session = session,
+            inputId = 'group',
+            choices = c("None", group_inputs),
+            selected = group_selected
+          )
+
+        }
 
       }
 
-      if(!is.null(input$group)){
+    })
 
-        group_inputs <- key_data |>
-          filter(group,
+    observeEvent(input$statistic, {
+
+      if(include_stat_picker){
+
+        exposure_inputs <- key_data |>
+          filter(exposure,
                  variable %in% setdiff(names(dt()),
-                                       c(input$outcome,
-                                         input$exposure))) |>
+                                       input$outcome)) |>
           select(label, variable) |>
           deframe()
 
-        group_selected <- setdiff(input$group,
-                                  c(input$outcome,
-                                    input$exposure))
-
         updatePickerInput(
           session = session,
-          inputId = 'group',
-          choices = c("None", group_inputs),
-          selected = group_selected
+          inputId = 'exposure',
+          choices = c("None", exposure_inputs),
+          selected = setdiff(input$exposure, input$outcome)
         )
+
+        if(!is.null(input$subset_variable)){
+
+          subset_inputs <- key_data |>
+            filter(subset,
+                   variable %in% setdiff(names(dt()), c(input$outcome))) |>
+            select(label, variable) |>
+            deframe()
+
+          subset_selected <- setdiff(input$subset_variable, c(input$outcome))
+
+          updatePickerInput(
+            session = session,
+            inputId = 'subset_variable',
+            choices = c("None", subset_inputs),
+            selected = subset_selected
+          )
+
+        }
+
+        if(!is.null(input$group)){
+
+          group_inputs <- key_data |>
+            filter(group,
+                   variable %in% setdiff(names(dt()),
+                                         c(input$outcome,
+                                           input$exposure))) |>
+            select(label, variable) |>
+            deframe()
+
+          group_selected <- setdiff(input$group,
+                                    c(input$outcome,
+                                      input$exposure))
+
+          updatePickerInput(
+            session = session,
+            inputId = 'group',
+            choices = c("None", group_inputs),
+            selected = group_selected
+          )
+
+        }
 
       }
 
@@ -458,8 +582,17 @@ dataSummarizerServer <- function(id,
 
     })
 
-    result <- reactive({
+    observeEvent(input$help, {
 
+        introjs(session,
+                options = list(nextLabel ="Next",
+                               prevLabel ="Previous",
+                               skipLabel ="Skip",
+                               steps = intro()))
+
+      })
+
+    result <- reactive({
 
       dt_list <- reactiveValuesToList(input)[c('year',
                                                'outcome',
@@ -485,8 +618,6 @@ dataSummarizerServer <- function(id,
                            "subset_variable %in% subset_value",
                            sep = ' & ')
       }
-
-      # browser()
 
       # only subset the data once, without copying any data
       dt_subsetted <- glue("dt()[{dt_subset}, env = dt_list]") |>
