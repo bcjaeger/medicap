@@ -39,7 +39,24 @@ exploreServer <- function(
                                    key_data = key_data,
                                    key_time = key_time)
 
-    result() |>
+    data_tbl <- reactive({
+
+      if(key_list[[input$`summarizer_inputs-outcome`]]$type == 'ttev'){
+
+        result()[!is.na(ttev_inc_crude_est)]
+
+      } else {
+
+        result()
+
+      }
+
+    }) |>
+      bindEvent(result())
+
+
+
+    data_tbl() |>
       datatable(
         options = list(
           lengthMenu = list(c(5,15,20),c('5','15','20')),

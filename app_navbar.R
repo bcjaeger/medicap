@@ -101,7 +101,7 @@ ui <- shinyUI(
               input_width = '97.5%',
               ttev_condition = jsc_write_cpanel(key_data, 'ttev', 'outcome'),
               ctns_condition = jsc_write_cpanel(key_data, 'ctns', 'exposure'),
-              do_compute_label = 'Compute statistics'
+              do_compute_label = 'Tabulate'
             )
           ),
           mainPanel = mainPanel(
