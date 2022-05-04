@@ -1,6 +1,4 @@
 
-
-
 dataSummarizerInput <- function(
     id,
     input_width = '97.5%',
@@ -54,25 +52,32 @@ dataSummarizerInput <- function(
 
     HTML('<br>'), HTML('<br>'),
 
-    pickerInput(
-      inputId = ns('dataset'),
-      label = 'Select a dataset',
-      choices = c("racs"   = "racs",
-                  "ami"    = "ami",
-                  "stroke" = "stroke"),
-      selected = 'racs',
-      multiple = TRUE,
-      options = pickerOptions(maxOptions = 1),
-      width = input_width
+    div(
+      id = ns("box_dataset"),
+      pickerInput(
+        inputId = ns('dataset'),
+        label = 'Select a dataset',
+        choices = c("racs"   = "racs",
+                    "ami"    = "ami",
+                    "stroke" = "stroke"),
+        selected = 'racs',
+        multiple = TRUE,
+        options = pickerOptions(maxOptions = 1),
+        width = input_width
+      )
     ),
 
-    prettyCheckboxGroup(
-      inputId = ns("year"),
-      label = "Select index year(s)",
-      inline = TRUE,
-      selected = NULL,
-      width = input_width
+    div(
+      id = ns("box_year"),
+      prettyCheckboxGroup(
+        inputId = ns("year"),
+        label = "Select index year(s)",
+        inline = TRUE,
+        selected = NULL,
+        width = input_width
+      )
     ),
+
 
     actionGroupButtons(
       inputIds = ns(c('select_all_years',
@@ -87,14 +92,17 @@ dataSummarizerInput <- function(
     HTML('<br>'),HTML('<br>'),
 
 
-    pickerInput(
-      inputId = ns('outcome'),
-      label = 'Select an outcome',
-      choices = c(),
-      selected = NULL,
-      multiple = TRUE,
-      options = pickerOptions(maxOptions = 1),
-      width = input_width
+    div(
+      id = ns("box_outcome"),
+      pickerInput(
+        inputId = ns('outcome'),
+        label = 'Select an outcome',
+        choices = c(),
+        selected = NULL,
+        multiple = TRUE,
+        options = pickerOptions(maxOptions = 1),
+        width = input_width
+      )
     ),
 
     conditionalPanel(
@@ -112,28 +120,34 @@ dataSummarizerInput <- function(
       )
     ),
 
-    conditionalPanel(
-      condition = stat_picker_condition,
-      ns = ns,
-      pickerInput(
-        inputId = ns('statistic'),
-        label = 'Select a statistic to tabulate',
-        choices = c(),
-        selected = NULL,
-        multiple = TRUE,
-        options = pickerOptions(maxOptions = 1),
-        width = "97%"
+    div(
+      id = ns("box_statistic"),
+      conditionalPanel(
+        condition = stat_picker_condition,
+        ns = ns,
+        pickerInput(
+          inputId = ns('statistic'),
+          label = 'Select a statistic to tabulate',
+          choices = c(),
+          selected = NULL,
+          multiple = TRUE,
+          options = pickerOptions(maxOptions = 1),
+          width = "97%"
+        )
       )
     ),
 
-    pickerInput(
-      inputId = ns('exposure'),
-      label = 'Select an exposure',
-      choices = c('None'),
-      selected = NULL,
-      multiple = TRUE,
-      options = pickerOptions(maxOptions = 1),
-      width = input_width
+    div(
+      id = ns("box_exposure"),
+      pickerInput(
+        inputId = ns('exposure'),
+        label = 'Select an exposure',
+        choices = c('None'),
+        selected = NULL,
+        multiple = TRUE,
+        options = pickerOptions(maxOptions = 1),
+        width = input_width
+      )
     ),
 
     conditionalPanel(
@@ -150,40 +164,47 @@ dataSummarizerInput <- function(
       )
     ),
 
-    pickerInput(
-      inputId = ns('subset_variable'),
-      label = 'Select a subsetting variable',
-      choices = c('None'),
-      selected = NULL,
-      multiple = TRUE,
-      options = pickerOptions(maxOptions = 1),
-      width = input_width
-    ),
-
-    conditionalPanel(
-      condition = "input.subset_variable.length > 0 &
-                     input.subset_variable != 'None'",
-      ns = ns,
-      prettyCheckboxGroup(
-        inputId = ns('subset_value'),
-        label = 'Include these subsets:',
-        choices = c(),
+    div(
+      id = ns("box_subset_variable"),
+      pickerInput(
+        inputId = ns('subset_variable'),
+        label = 'Select a subsetting variable',
+        choices = c('None'),
         selected = NULL,
+        multiple = TRUE,
+        options = pickerOptions(maxOptions = 1),
         width = input_width
       )
     ),
 
-    pickerInput(
-      inputId = ns('group'),
-      label = 'Select a grouping variable',
-      choices = c(),
-      selected = NULL,
-      multiple = TRUE,
-      options = pickerOptions(maxOptions = 1),
-      width = input_width
+    div(
+      id = ns("box_do_subset"),
+      conditionalPanel(
+        condition = "input.subset_variable.length > 0 &
+                     input.subset_variable != 'None'",
+        ns = ns,
+        prettyCheckboxGroup(
+          inputId = ns('subset_value'),
+          label = 'Include these subsets:',
+          choices = c(),
+          selected = NULL,
+          width = input_width
+        )
+      )
     ),
 
-
+    div(
+      id = ns("box_group"),
+      pickerInput(
+        inputId = ns('group'),
+        label = 'Select a grouping variable',
+        choices = c(),
+        selected = NULL,
+        multiple = TRUE,
+        options = pickerOptions(maxOptions = 1),
+        width = input_width
+      )
+    ),
 
     div(
       id = ns("box_do_computation"),
@@ -223,10 +244,7 @@ dataSummarizerServer <- function(
     key_data,
     key_list,
     key_time,
-    help_intro = c(
-      "A helping button" = "help",
-      "A computing button" = "box_do_computation"
-    ),
+    help_intro,
     include_stat_picker = FALSE
 ) {
 

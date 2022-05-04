@@ -28,10 +28,7 @@ tabulateServer <- function(
     key_data,
     key_list,
     key_time,
-    help_intro = c(
-      "A helping button" = "help",
-      "A computing button" = "box_do_computation"
-    )
+    help_intro
 ) {
 
   moduleServer(id, function(input, output, session) {
@@ -44,6 +41,7 @@ tabulateServer <- function(
                            key_list = key_list,
                            key_data = key_data,
                            key_time = key_time,
+                           help_intro = help_intro,
                            include_stat_picker = TRUE)
 
 

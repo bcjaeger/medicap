@@ -4,6 +4,16 @@
 
 # Initialize ----
 
+help_intro_init <- c(
+  "First, select a dataset to analyze" = "box_dataset",
+  "Next, select a set of index years. Results will be presented using data from the years you select." = "box_year",
+  "Pick an outcome from the list of available options. This variable will be summarized in your results" = "box_outcome",
+  "We assess whether summarized values of the outcome differ across groups defined by an exposure variable. If you don't need to do this, you can select 'None'. You must pick a value for this input before accessing inputs below it!" = "box_exposure",
+  "Results will be presented using subsets that you select based on this variable. If you don't need to do this, you can select 'None'. You must pick a value for this input before accessing inputs below it!" = "box_subset_variable",
+  "Results will be replicated overall and in each group, separately. If you don't need this, you can select 'None' for group" = "box_group",
+  "When you are ready to compute your results, click here! If the button is blue, then you are good to go. If it is grey, it means a required input has not been specified." = "box_do_computation"
+)
+
 source("packages.R")
 
 for(f in list.files("R/", full.names = TRUE)) source(f)
@@ -120,22 +130,33 @@ ui <- shinyUI(
 
 server = function(input, output, session) {
 
-  output$explore_output <- exploreServer('explore_inputs',
-                                         dt_racs = dt_racs,
-                                         dt_stroke = dt_stroke,
-                                         dt_ami = dt_ami,
-                                         key_list = key_list,
-                                         key_data = key_data,
-                                         key_time = key_time)
+  output$explore_output <- exploreServer(
+    'explore_inputs',
+    dt_racs = dt_racs,
+    dt_stroke = dt_stroke,
+    dt_ami = dt_ami,
+    key_list = key_list,
+    key_data = key_data,
+    key_time = key_time,
+    help_intro = help_intro_init
+  )
 
 
-  output$tabulate_output <- tabulateServer('tabulate_inputs',
-                                           dt_racs = dt_racs,
-                                           dt_stroke = dt_stroke,
-                                           dt_ami = dt_ami,
-                                           key_list = key_list,
-                                           key_data = key_data,
-                                           key_time = key_time)
+  output$tabulate_output <- tabulateServer(
+    'tabulate_inputs',
+    dt_racs = dt_racs,
+    dt_stroke = dt_stroke,
+    dt_ami = dt_ami,
+    key_list = key_list,
+    key_data = key_data,
+    key_time = key_time,
+    help_intro = insert_element(
+      help_intro_init,
+      element_value = 'box_statistic',
+      element_name = 'You can tabulate one statistic at a time, for now.',
+      insert_before = 'box_exposure'
+    )
+  )
 
 
 }
