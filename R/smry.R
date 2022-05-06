@@ -141,14 +141,10 @@ smry_ttev <- function(status,
 
 
 
-  out <- cuminc(ftime = time, fstatus = status) |>
-    getElement(1) |>
-    as.data.table()
 
-  out[, var:= sqrt(var)]
-
-  setnames(out, old = 'var', new = 'inc_cumulative_se')
-  setnames(out, old = 'est', new = 'inc_cumulative_est')
+  # need to use ABDHMO_days
+  # time[is.na(time)] <- pmin(ABDHMO_days[is.na(time)], horizon)
+  time[is.na(time)] <- horizon
 
   time_past_horizon <- which(time > horizon)
 
@@ -157,6 +153,15 @@ smry_ttev <- function(status,
 
   .status <- status
   .status[time_past_horizon] <- 0
+
+  out <- cuminc(ftime = .time, fstatus = .status) |>
+    getElement(1) |>
+    as.data.table()
+
+  out[, var:= sqrt(var)]
+
+  setnames(out, old = 'var', new = 'inc_cumulative_se')
+  setnames(out, old = 'est', new = 'inc_cumulative_est')
 
   index_keep <- out[time <= horizon, .I]
 

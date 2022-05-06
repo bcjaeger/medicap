@@ -27,3 +27,6 @@ Pre_index_LEAD,bnry,Prevalence of lower extremity arterial disease,TRUE,TRUE,TRU
 Pre_index_ischemic_stroke,bnry,Prevalence of stroke,TRUE,TRUE,TRUE,TRUE,NA
 Pre_index_ASCVD,bnry,History of atherosclerotic cardiovascular disease,TRUE,TRUE,TRUE,TRUE,NA
 year_ABDHMO,ctns,Follow-up duration (year),TRUE,TRUE,TRUE,TRUE,NA
+Post_index_any_hospitalization,ttev,Any hospitalization during followu-up,TRUE,FALSE,FALSE,FALSE,Post_index_any_hospitalization_days
+state,catg,SSA state,FALSE,TRUE,TRUE,TRUE,NA
+county_name,catg,county name,FALSE,TRUE,TRUE,TRUE,NA
