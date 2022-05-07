@@ -71,9 +71,9 @@ if(use_fake){
   path_to_data <-
     file.path(peer_drive, "Users", "Ligong", "Shiny app", "shiny")
 
-  dt_racs <- load_dt_racs(path_to_data)
-  dt_ami <- load_dt_ami(path_to_data)
-  dt_stroke <- load_dt_stroke(path_to_data)
+  if(!exists('dt_racs')) dt_racs <- load_dt_racs(path_to_data)
+  if(!exists('dt_ami')) dt_ami <- load_dt_ami(path_to_data)
+  if(!exists('dt_stroke')) dt_stroke <- load_dt_stroke(path_to_data)
 
 }
 
@@ -124,7 +124,25 @@ ui <- shinyUI(
           )
         )
       ),
-      tabPanel("Visualize")
+      tabPanel(
+        "Visualize",
+        sidebarLayout(
+          sidebarPanel(
+            visualizeInput(
+              'visualize_inputs',
+              input_width = '97.5%',
+              ttev_condition = jsc_write_cpanel(key_data, 'ttev', 'outcome'),
+              ctns_condition = jsc_write_cpanel(key_data, 'ctns', 'exposure'),
+              do_compute_label = 'Visualize'
+            )
+          ),
+          mainPanel = mainPanel(
+            plotlyOutput('visualize_output',
+                         width = "auto",
+                         height = '800px')
+          )
+        )
+      )
     )
 
 
@@ -149,6 +167,22 @@ server = function(input, output, session) {
 
   output$tabulate_output <- tabulateServer(
     'tabulate_inputs',
+    dt_racs = dt_racs,
+    dt_stroke = dt_stroke,
+    dt_ami = dt_ami,
+    key_list = key_list,
+    key_data = key_data,
+    key_time = key_time,
+    help_intro = insert_element(
+      help_intro_init,
+      element_value = 'box_statistic',
+      element_name = 'You can tabulate one statistic at a time, for now.',
+      insert_before = 'box_exposure'
+    )
+  )
+
+  output$visualize_output <- visualizeServer(
+    'visualize_inputs',
     dt_racs = dt_racs,
     dt_stroke = dt_stroke,
     dt_ami = dt_ami,

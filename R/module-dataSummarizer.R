@@ -5,12 +5,14 @@ dataSummarizerInput <- function(
     ttev_condition,
     ctns_condition,
     do_compute_label,
-    include_stat_picker = FALSE
+    include_stat_picker = FALSE,
+    include_viz_inputs = FALSE
 ) {
 
   ns <- NS(id)
 
   stat_picker_condition <- tolower(as.character(include_stat_picker))
+  viz_input_condition <- tolower(as.character(include_viz_inputs))
 
   stat_picker_compute_addon <- switch(stat_picker_condition,
                                       'true' = 'input.statistic.length > 0 &',
@@ -231,6 +233,16 @@ dataSummarizerInput <- function(
           style = "color: #fff; background-color: #808080; border-color: #2e6da4"
         )
       )
+    ),
+
+    conditionalPanel(
+      condition = viz_input_condition,
+      ns = ns,
+      sliderInput(inputId = "height",
+                  label = "Figure height, pixels",
+                  min = 400,
+                  max = 1000,
+                  value = 500)
     )
 
   )
