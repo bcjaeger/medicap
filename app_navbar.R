@@ -47,7 +47,7 @@ key_list <- key_data |>
     tbl_values = setdiff(names(key_data), 'variable')
   )
 
-use_fake <- TRUE
+use_fake <- FALSE
 
 if(use_fake){
 
@@ -64,7 +64,12 @@ if(use_fake){
 
   # using real data: ----
 
-  path_to_data <- file.path("Z:", "Users", "Ligong", "Shiny app", "shiny")
+  # Note bcjaeger uses O, ligongc uses Z
+
+  peer_drive <- if(dir.exists('O:/users/Ligong')) "O:" else "Z:"
+
+  path_to_data <-
+    file.path(peer_drive, "Users", "Ligong", "Shiny app", "shiny")
 
   dt_racs <- load_dt_racs(path_to_data)
   dt_ami <- load_dt_ami(path_to_data)

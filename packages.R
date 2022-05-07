@@ -1,5 +1,13 @@
 
 
+# path to my workstation R packages,
+pkgs <- file.path(
+  "C:", "Users", "bjaeger", "Documents", "R", "4.1", "workstation"
+)
+
+# only use this library if you are bcjaeger
+if(dir.exists(pkgs)) .libPaths(pkgs)
+
 library(shiny)
 library(rlang)
 library(tibble)

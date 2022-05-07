@@ -3,27 +3,41 @@ Year,time,Index year,FALSE,FALSE,FALSE,FALSE,NA
 Age,catg,"Age, years",FALSE,TRUE,TRUE,TRUE,NA
 Gender,catg,Gender,FALSE,TRUE,TRUE,TRUE,NA
 Race,catg,Race,FALSE,TRUE,TRUE,TRUE,NA
-Pre_index_statin_intensity,catg,Statin intensity for prevalent users,FALSE,TRUE,FALSE,TRUE,NA
-Pre_index_statin,bnry,Prevalent statin use,TRUE,TRUE,TRUE,TRUE,NA
-Post_index_statin,ttev,Statin use during follow-up,TRUE,FALSE,FALSE,FALSE,Post_index_statin_days
-Pre_index_PCSK9i_dose,catg,Dose of prevalent PCSK9 Inhibitor,FALSE,FALSE,FALSE,FALSE,NA
-Pre_index_ezetimibe,bnry,Prevalent ezetimibe use,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_PCSK9i,bnry,Prevalent PCSK9i use,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_alirocumab_dose,catg,Dose of prevalent evolocumab,FALSE,TRUE,TRUE,TRUE,NA
-Pre_index_alirocumab,bnry,Prevalent alirocumab use,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_evolocumab_dose,catg,Dose of prevalent evolocumab,FALSE,TRUE,TRUE,TRUE,NA
-Pre_index_evolocumab,bnry,Prevalent evolocumab use,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_hypertension,bnry,Prevalence of hypertension,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_depression,bnry,Prevalence of depression,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_diabetes,bnry,Prevalence of diabetes,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_CKD,bnry,Prevalence of chronic kidney disease,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_CHD,bnry,Prevalence of coronary heart disease,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_MI,bnry,Prevalence of myocardial infarction,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_CABG_PCI,bnry,Prior coronary revascularization procedure,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_smoking,bnry,Prevalence of smoking,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_cardiologist_visit,bnry,Prior cardiologist care,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_HF,bnry,Prevalence of heart failure,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_LEAD,bnry,Prevalence of lower extremity arterial disease,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_ischemic_stroke,bnry,Prevalence of stroke,TRUE,TRUE,TRUE,TRUE,NA
-Pre_index_ASCVD,bnry,History of atherosclerotic cardiovascular disease,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_statin_intensity,catg,Pre-index statin intensity,FALSE,TRUE,FALSE,TRUE,NA
+Pre_index_statin,bnry,Pre-index statin use,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_PCSK9i_dose,catg,Pre-index dose of PCSK9 Inhibitor,FALSE,FALSE,FALSE,FALSE,NA
+Pre_index_ezetimibe,bnry,Pre-index ezetimibe use,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_PCSK9i,bnry,Pre-index PCSK9i use,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_alirocumab_dose,catg,Pre-index dose of evolocumab,FALSE,TRUE,TRUE,TRUE,NA
+Pre_index_alirocumab,bnry,Pre-index alirocumab use,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_evolocumab_dose,catg,Pre-index dose of evolocumab,FALSE,TRUE,TRUE,TRUE,NA
+Pre_index_evolocumab,bnry,Pre-index evolocumab use,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_hypertension,bnry,Pre-index hypertension,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_depression,bnry,Pre-index depression,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_diabetes,bnry,Pre-index diabetes,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_CKD,bnry,Pre-index chronic kidney disease,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_CHD,bnry,Pre-index coronary heart disease,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_MI,bnry,Pre-index myocardial infarction,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_CABG_PCI,bnry,Pre-index coronary revascularization procedure,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_smoking,bnry,Pre-index smoking,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_cardiologist_visit,bnry,Pre-index cardiologist care,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_HF,bnry,Pre-index heart failure,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_LEAD,bnry,Pre-index of lower extremity arterial disease,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_ischemic_stroke,bnry,Pre-index stroke,TRUE,TRUE,TRUE,TRUE,NA
+Pre_index_ASCVD,bnry,Pre-index atherosclerotic cardiovascular disease,TRUE,TRUE,TRUE,TRUE,NA
 year_ABDHMO,ctns,Follow-up duration (year),TRUE,TRUE,TRUE,TRUE,NA
+Post_index_statin,ttev,Post-index Statin use,TRUE,FALSE,FALSE,FALSE,Post_index_statin_days
+Post_index_statin_intensity,catg,Post-index Statin intensity,FALSE,TRUE,FALSE,TRUE,NA
+Post_index_high_intensity_statin,ttev,Post-index high intensity statin use,TRUE,FALSE,FALSE,FALSE,Post_index_high_intensity_statin_days
+Post_index_ezetimibe,ttev,Post-index etetimibe use,TRUE,FALSE,FALSE,FALSE,Post_index_ezetimibe_days
+Post_index_PCSK9_inhibitor,ttev,Post-index PCSK9 inhibitor use,TRUE,FALSE,FALSE,FALSE,Post_index_PCSK9_inhibitor_days
+Post_index_cardiologist_visit,ttev,Post-index cardiologist visit,TRUE,FALSE,FALSE,FALSE,Post_index_cardiologist_visit_days
+Post_index_neurologist_visit,ttev,Post-index neurologist visit,TRUE,FALSE,FALSE,FALSE,Post_index_neurologist_visit_days
+Post_index_outpatient_visit,ttev,Post-index outpatient visit,TRUE,FALSE,FALSE,FALSE,Post_index_outpatient_visit_days
+Post_index_any_hospitalization,ttev,Post index any hospitalization,TRUE,FALSE,FALSE,FALSE,Post_index_any_hospitalization_days
+Post_index_CHD_hospitalization,ttev,Post index CHD hospitalization,TRUE,FALSE,FALSE,FALSE,Post_index_CHD_hospitalization_days
+Post_index_MI_hospitalization,ttev,Post index any hospitalization,TRUE,FALSE,FALSE,FALSE,Post_index_MI_hospitalization_days
+Post_index_HF_hospitalization,ttev,Post index MI hospitalization,TRUE,FALSE,FALSE,FALSE,Post_index_HF_hospitalization_days
+Post_index_ischemic_stroke_hospitalization,ttev,Post index ischemic stroke hospitalization,TRUE,FALSE,FALSE,FALSE,Post_index_ischemic_stroke_hospitalization_days
+Post_index_cardiac_rehab_number,intg,Number of post-index cardiac rehab visits,TRUE,FALSE,FALSE,FALSE,NA
+Post_index_cardiac_rehab,bnry,Post-index cardiac rehab,TRUE,FALSE,FALSE,FALSE,NA
