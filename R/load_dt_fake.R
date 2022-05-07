@@ -39,6 +39,17 @@ load_dt_fake <- function(n_obs) {
 
   list(dt_stroke = copy(dt_fake),
        dt_ami = copy(dt_fake),
-       dt_racs = copy(dt_fake))
+       dt_racs = copy(dt_fake)) |>
+    map(
+      select,
+      Year,
+      Age,
+      Gender,
+      Race,
+      Pre_index_hypertension,
+      year_ABDHMO,
+      Post_index_statin,
+      Post_index_statin_days
+    )
 
 }

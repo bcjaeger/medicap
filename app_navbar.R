@@ -47,7 +47,7 @@ key_list <- key_data |>
     tbl_values = setdiff(names(key_data), 'variable')
   )
 
-use_fake <- FALSE
+use_fake <- TRUE
 
 if(use_fake){
 
@@ -137,9 +137,7 @@ ui <- shinyUI(
             )
           ),
           mainPanel = mainPanel(
-            plotlyOutput('visualize_output',
-                         width = "auto",
-                         height = '800px')
+            plotlyOutput('visualize_output')
           )
         )
       )
@@ -192,7 +190,7 @@ server = function(input, output, session) {
     help_intro = insert_element(
       help_intro_init,
       element_value = 'box_statistic',
-      element_name = 'You can tabulate one statistic at a time, for now.',
+      element_name = 'You can visualize one statistic at a time.',
       insert_before = 'box_exposure'
     )
   )

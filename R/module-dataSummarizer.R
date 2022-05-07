@@ -129,12 +129,29 @@ dataSummarizerInput <- function(
         ns = ns,
         pickerInput(
           inputId = ns('statistic'),
-          label = 'Select a statistic to tabulate',
+          label = glue('Select a statistic'),
           choices = c(),
           selected = NULL,
           multiple = TRUE,
           options = pickerOptions(maxOptions = 1),
           width = "97%"
+        )
+      )
+    ),
+
+    div(
+      id = ns('box_geom'),
+      conditionalPanel(
+        condition = viz_input_condition,
+        ns = ns,
+        pickerInput(
+          inputId = ns('geom'),
+          label = 'Select a plotting geometry',
+          choices = c("points", "bars"),
+          selected = "bars",
+          multiple = TRUE,
+          options = pickerOptions(maxOptions = 1),
+          width = input_width
         )
       )
     ),
@@ -233,16 +250,6 @@ dataSummarizerInput <- function(
           style = "color: #fff; background-color: #808080; border-color: #2e6da4"
         )
       )
-    ),
-
-    conditionalPanel(
-      condition = viz_input_condition,
-      ns = ns,
-      sliderInput(inputId = "height",
-                  label = "Figure height, pixels",
-                  min = 400,
-                  max = 1000,
-                  value = 500)
     )
 
   )
@@ -820,15 +827,6 @@ dataSummarizerServer <- function(
                                           paste(dt_list$year))),
           env = list('key_time' = key_time)]
 
-      # set(
-      #   out,
-      #   j = key_time,
-      #   value = factor(
-      #     out[[key_time]],
-      #     levels = c(-Inf, dt_list$year),
-      #                labels = c("Overall", paste(dt_list$year))
-      #   )
-      # )
 
       move_to_front <- c(key_time, dt_groups)
 

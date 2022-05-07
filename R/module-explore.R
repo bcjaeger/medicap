@@ -60,11 +60,6 @@ exploreServer <- function(
         options = list(
           lengthMenu = list(c(5,15,20),c('5','15','20')),
           pageLength = 10,
-          initComplete = JS(
-            "function(settings, json) {",
-            "$(this.api().table().header()).css({'background-color': '#337ab7', 'color': '#FFFFFF'});",
-            "}"
-          ),
           columnDefs=list(list(className='dt-center',targets="_all"))
         ),
         filter = "top",

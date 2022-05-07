@@ -103,7 +103,18 @@ tabulateServer <- function(
       }
 
       if(is_used(.group)){
+
         dcast_lhs_variables <- c(dcast_lhs_variables, .group)
+
+        data_gt[
+          ,
+          group := fifelse(test = group == 'All groups',
+                           yes = as.character(group),
+                           no = paste(key_list[[.group]]$label,
+                                      group, sep = ': ')),
+          env = list(group = .group)
+        ]
+
       }
 
       dcast_formula_lhs <- paste(dcast_lhs_variables, collapse = ' + ')
