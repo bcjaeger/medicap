@@ -12,6 +12,7 @@ dataSummarizerInput <- function(
   ns <- NS(id)
 
   stat_picker_condition <- tolower(as.character(include_stat_picker))
+
   viz_input_condition <- tolower(as.character(include_viz_inputs))
 
   stat_picker_compute_addon <- switch(stat_picker_condition,
@@ -40,6 +41,13 @@ dataSummarizerInput <- function(
     compute_ready <- glue(
       "( {compute_ready} ) &
        ( !({ctns_condition_parenthetical}) | input.n_group.length > 0 )"
+    )
+  }
+
+  if(include_viz_inputs){
+    compute_ready <- glue(
+      "( {compute_ready} ) &
+       ( input.geom.length > 0 )"
     )
   }
 
@@ -287,32 +295,102 @@ dataSummarizerServer <- function(
     })
 
     # maybe move this to the pre-amble? similar to the dt objects
-    dt_years <- reactive({get_unique(dt()[[key_time]])})
+    dt_years <- reactive(get_unique(dt()[[key_time]]))
+
+    dt_key <- reactive(filter(key_data, variable %in% names(dt())))
+
+    outcome_inputs <- reactive({
+      dt_key() |>
+        filter(outcome) |>
+        select(label, variable) |>
+        deframe()
+    })
+
+    exposure_inputs <- reactive({
+      dt_key() |>
+        filter(exposure) |>
+        select(label, variable) |>
+        deframe()
+    })
+
+    subset_variable_inputs <- reactive({
+      dt_key() |>
+        filter(subset) |>
+        select(label, variable) |>
+        deframe()
+    })
+
+    group_inputs <- reactive({
+      dt_key() |>
+        filter(subset) |>
+        select(label, variable) |>
+        deframe()
+    })
+
 
     observeEvent(input$dataset, {
 
-      selected <- intersect(dt_years(), input$year)
-      if(is_empty(selected))
-        selected <- max(dt_years())
+      year_selected <- intersect(dt_years(), input$year)
+
+      if(is_empty(year_selected))
+        year_selected <- max(dt_years())
 
       updatePrettyCheckboxGroup(
         inputId = 'year',
         choices = as.character(sort(dt_years())),
-        selected = as.character(selected),
+        selected = as.character(year_selected),
         inline = TRUE
       )
-
-      outcome_inputs <- key_data |>
-        filter(outcome,
-               variable %in% names(dt())) |>
-        select(label, variable) |>
-        deframe()
 
       updatePickerInput(
         session = session,
         inputId = 'outcome',
-        choices = outcome_inputs,
-        selected = intersect(names(dt()), input$outcome)
+        choices = outcome_inputs(),
+        selected = intersect(outcome_inputs(), input$outcome)
+      )
+
+      exposure_selected <- exposure_inputs() |>
+        intersect(input$exposure) |>
+        setdiff(input$outcome)
+
+      if(is_empty(exposure_selected))
+        exposure_selected <- 'None'
+
+      updatePickerInput(
+        session = session,
+        inputId = 'exposure',
+        choices = exposure_inputs(),
+        selected = exposure_selected
+      )
+
+      subset_variable_selected <-
+        subset_variable_inputs() |>
+        intersect(input$subset_variable) |>
+        setdiff(input$outcome)
+
+      if(is_empty(subset_variable_selected))
+        subset_variable_selected <- 'None'
+
+      updatePickerInput(
+        session = session,
+        inputId = 'subset_variable',
+        choices = subset_variable_inputs(),
+        selected = subset_variable_selected
+      )
+
+      group_selected <-
+        group_inputs() |>
+        intersect(input$group) |>
+        setdiff(input$outcome)
+
+      if(is_empty(group_selected))
+        group_selected <- 'None'
+
+      updatePickerInput(
+        session = session,
+        inputId = 'group',
+        choices = group_inputs(),
+        selected = group_selected
       )
 
     })
@@ -335,40 +413,6 @@ dataSummarizerServer <- function(
     observeEvent(input$deselect_all_years, {
       updatePrettyCheckboxGroup(inputId = 'year',
                                 selected = character(0))
-    })
-
-    # the is_empty event has to come before the regular event.
-    # Otherwise, the downstream inputs never show up. Why?
-    observeEvent(is_empty(input$outcome), {
-
-      updatePickerInput(
-        session = session,
-        inputId = 'exposure',
-        choices = character(0),
-        selected = character(0)
-      )
-
-      updatePickerInput(
-        session = session,
-        inputId = 'statistic',
-        choices = character(0),
-        selected = character(0)
-      )
-
-      updatePickerInput(
-        session = session,
-        inputId = 'subset_variable',
-        choices = character(0),
-        selected = character(0)
-      )
-
-      updatePickerInput(
-        session = session,
-        inputId = 'group',
-        choices = character(0),
-        selected = character(0)
-      )
-
     })
 
     observeEvent(input$outcome, {
@@ -402,187 +446,69 @@ dataSummarizerServer <- function(
         }
 
 
-      } else {
-
-        exposure_inputs <- key_data |>
-          filter(exposure,
-                 variable %in% setdiff(names(dt()),
-                                       input$outcome)) |>
-          select(label, variable) |>
-          deframe()
-
-        updatePickerInput(
-          session = session,
-          inputId = 'exposure',
-          choices = c("None", exposure_inputs),
-          selected = setdiff(input$exposure, input$outcome)
-        )
-
-        if(!is.null(input$subset_variable)){
-
-          subset_inputs <- key_data |>
-            filter(subset,
-                   variable %in% setdiff(names(dt()), c(input$outcome))) |>
-            select(label, variable) |>
-            deframe()
-
-          subset_selected <- setdiff(input$subset_variable, c(input$outcome))
-
-          updatePickerInput(
-            session = session,
-            inputId = 'subset_variable',
-            choices = c("None", subset_inputs),
-            selected = subset_selected
-          )
-
-        }
-
-        if(!is.null(input$group)){
-
-          group_inputs <- key_data |>
-            filter(group,
-                   variable %in% setdiff(names(dt()),
-                                         c(input$outcome,
-                                           input$exposure))) |>
-            select(label, variable) |>
-            deframe()
-
-          group_selected <- setdiff(input$group,
-                                    c(input$outcome,
-                                      input$exposure))
-
-          updatePickerInput(
-            session = session,
-            inputId = 'group',
-            choices = c("None", group_inputs),
-            selected = group_selected
-          )
-
-        }
-
       }
 
-    })
+      exposure_selected <- exposure_inputs() |>
+        intersect(input$exposure) |>
+        setdiff(input$outcome)
 
-    observeEvent(input$statistic, {
 
-      if(include_stat_picker){
+      updatePickerInput(
+        session = session,
+        inputId = 'exposure',
+        choices = exposure_inputs()[exposure_inputs() != input$outcome],
+        selected = exposure_selected
+      )
 
-        exposure_inputs <- key_data |>
-          filter(exposure,
-                 variable %in% setdiff(names(dt()),
-                                       input$outcome)) |>
-          select(label, variable) |>
-          deframe()
-
-        updatePickerInput(
-          session = session,
-          inputId = 'exposure',
-          choices = c("None", exposure_inputs),
-          selected = setdiff(input$exposure, input$outcome)
-        )
-
-        if(!is.null(input$subset_variable)){
-
-          subset_inputs <- key_data |>
-            filter(subset,
-                   variable %in% setdiff(names(dt()), c(input$outcome))) |>
-            select(label, variable) |>
-            deframe()
-
-          subset_selected <- setdiff(input$subset_variable, c(input$outcome))
-
-          updatePickerInput(
-            session = session,
-            inputId = 'subset_variable',
-            choices = c("None", subset_inputs),
-            selected = subset_selected
-          )
-
-        }
-
-        if(!is.null(input$group)){
-
-          group_inputs <- key_data |>
-            filter(group,
-                   variable %in% setdiff(names(dt()),
-                                         c(input$outcome,
-                                           input$exposure))) |>
-            select(label, variable) |>
-            deframe()
-
-          group_selected <- setdiff(input$group,
-                                    c(input$outcome,
-                                      input$exposure))
-
-          updatePickerInput(
-            session = session,
-            inputId = 'group',
-            choices = c("None", group_inputs),
-            selected = group_selected
-          )
-
-        }
-
-      }
-
-    })
-
-    observeEvent(is_empty(input$exposure), {
+      subset_variable_selected <-
+        subset_variable_inputs() |>
+        intersect(input$subset_variable) |>
+        setdiff(input$outcome)
 
       updatePickerInput(
         session = session,
         inputId = 'subset_variable',
-        choices = character(0),
-        selected = character(0)
+        choices = subset_variable_inputs()[subset_variable_inputs() != input$outcome],
+        selected = subset_variable_selected
       )
+
+      group_selected <-
+        group_inputs() |>
+        intersect(input$group) |>
+        setdiff(input$outcome)
 
       updatePickerInput(
         session = session,
         inputId = 'group',
-        choices = character(0),
-        selected = character(0)
+        choices = group_inputs()[group_inputs() != input$outcome],
+        selected = group_selected
       )
 
     })
 
     observeEvent(input$exposure, {
 
-      subset_inputs <- key_data |>
-        filter(subset,
-               variable %in% setdiff(names(dt()), c(input$outcome))) |>
-        select(label, variable) |>
-        deframe()
-
-      subset_selected <- setdiff(input$subset_variable, c(input$outcome))
-
-      updatePickerInput(
-        session = session,
-        inputId = 'subset_variable',
-        choices = c("None", subset_inputs),
-        selected = subset_selected
-      )
-
-      if(!is.null(input$group)){
-        if(input$exposure == input$group){
+      if(!is.null(input$outcome)){
+        if(input$outcome == input$exposure){
           updatePickerInput(
             session = session,
-            inputId = 'group',
-            selected = character(0)
+            inputId = 'outcome',
+            choices = outcome_inputs(),
+            selected = character()
           )
         }
       }
 
-    })
-
-    observeEvent(is_empty(input$subset_variable), {
-
-      updatePickerInput(
-        session = session,
-        inputId = 'group',
-        choices = character(0),
-        selected = character(0)
-      )
+      if(!is.null(input$group)){
+        if(input$group == input$exposure){
+          updatePickerInput(
+            session = session,
+            inputId = 'group',
+            choices = group_inputs(),
+            selected = character()
+          )
+        }
+      }
 
     })
 
@@ -595,27 +521,32 @@ dataSummarizerServer <- function(
         selected = character(0) #subset_value_selected
       )
 
-      # input$subset_variable, include or no?
 
-      group_inputs <- key_data |>
-        filter(group,
-               variable %in% setdiff(names(dt()),
-                                     c(input$outcome,
-                                       input$exposure))) |>
-        select(label, variable) |>
-        deframe()
+    })
 
-      group_selected <- setdiff(input$group,
-                                c(input$outcome,
-                                  input$exposure))
+    observeEvent(input$group, {
 
-      updatePickerInput(
-        session = session,
-        inputId = 'group',
-        choices = c("None", group_inputs),
-        selected = group_selected
-      )
+      if(!is.null(input$outcome)){
+        if(input$outcome == input$group){
+          updatePickerInput(
+            session = session,
+            inputId = 'outcome',
+            choices = outcome_inputs(),
+            selected = character()
+          )
+        }
+      }
 
+      if(!is.null(input$exposure)){
+        if(input$exposure == input$group){
+          updatePickerInput(
+            session = session,
+            inputId = 'exposure',
+            choices = exposure_inputs(),
+            selected = character()
+          )
+        }
+      }
 
     })
 

@@ -143,7 +143,10 @@ visualizeServer <- function(
 
       if(.stat %in% c('bnry_prevalence', 'ttev_inc_cumulative_est')){
         base_fig <- base_fig +
-          scale_y_continuous(limits = c(0, 1))
+          # limits include 0 and 1 in case a value is 0 or 1
+          scale_y_continuous(limits = c(-0.01, 1.01),
+                             breaks = seq(0, 1, by = 0.1),
+                             labels = scales::percent)
       } else {
         base_fig <- base_fig +
           scale_y_continuous(
@@ -154,12 +157,14 @@ visualizeServer <- function(
       }
 
 
-      n_rows <- ceiling(n_group / 2)
+      # 2 plots per row or 1?
+      # n_rows <- ceiling(n_group / 2)
+      n_rows <- n_group
 
       if(is_used(.input$group)) base_fig <- base_fig +
         facet_wrap(as.formula(glue("~{.input$group}")),
                    scales = 'free',
-                   ncol = 2)
+                   ncol = 1)
 
       ggplotly(base_fig,
                height = if(n_group==1) 600  else 400 * n_rows)

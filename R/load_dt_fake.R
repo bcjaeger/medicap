@@ -47,6 +47,7 @@ load_dt_fake <- function(n_obs) {
       Gender,
       Race,
       Pre_index_hypertension,
+      Pre_index_depression,
       year_ABDHMO,
       Post_index_statin,
       Post_index_statin_days
