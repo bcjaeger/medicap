@@ -224,7 +224,7 @@ dataSummarizerInput <- function(
       id = ns("box_group"),
       pickerInput(
         inputId = ns('group'),
-        label = 'Select a grouping variable',
+        label = 'Select a stratifying variable',
         choices = c(),
         selected = NULL,
         multiple = TRUE,
@@ -656,7 +656,7 @@ dataSummarizerServer <- function(
       if(key_list[[dt_list$outcome]]$type == 'ttev'){
 
         dt_list$time <- key_list[[dt_list$outcome]]$time
-        dt_make <- ".(outcome = list(f(outcome, time, horizon)))"
+        dt_make <- ".(outcome = list(f(outcome, time, horizon, ABDHMO_days)))"
 
       }
 

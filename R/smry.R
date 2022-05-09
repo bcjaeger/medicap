@@ -130,6 +130,7 @@ smry_bnry <- function(x,
 smry_ttev <- function(status,
                       time,
                       horizon,
+                      ABDHMO_days,
                       crude_inc_mult_by = 365.25 * 1000){
 
   if(sum(status, na.rm = TRUE) < 12){
@@ -139,13 +140,13 @@ smry_ttev <- function(status,
                       ttev_inc_crude_est = NA_real_))
   }
 
+  # ABDHMO_days is used to account for patients without a
+  # follow-up time for the given outcome. Patients who did
+  # not have an event will not have a recorded follow-up time
+  # for the given outcome but will have a value for ABDHMO_days.
+  time[is.na(time)] <- ABDHMO_days[is.na(time)]
 
-
-
-  # need to use ABDHMO_days
-  # time[is.na(time)] <- pmin(ABDHMO_days[is.na(time)], horizon)
-  time[is.na(time)] <- horizon
-
+  # truncate time values and status values to the given horizon
   time_past_horizon <- which(time > horizon)
 
   .time <- time

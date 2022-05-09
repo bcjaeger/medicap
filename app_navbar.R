@@ -4,6 +4,9 @@
 
 # Initialize ----
 
+# labels: RACS = Recent acute coronary syndrome
+#         AMI = Acute myocardial infarction
+
 help_intro_init <- c(
   "The data you select here will be summarized in the main window" = "box_dataset",
   "Beneficiaries with index dates in the years you select will be included in your analysis." = "box_year",
@@ -47,7 +50,7 @@ key_list <- key_data |>
     tbl_values = setdiff(names(key_data), 'variable')
   )
 
-use_fake <- TRUE
+use_fake <- FALSE
 
 if(use_fake){
 

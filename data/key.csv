@@ -39,7 +39,7 @@ Post_index_CHD_hospitalization,ttev,Post index CHD hospitalization,TRUE,FALSE,FA
 Post_index_MI_hospitalization,ttev,Post index any hospitalization,TRUE,FALSE,FALSE,FALSE,Post_index_MI_hospitalization_days
 Post_index_HF_hospitalization,ttev,Post index MI hospitalization,TRUE,FALSE,FALSE,FALSE,Post_index_HF_hospitalization_days
 Post_index_ischemic_stroke_hospitalization,ttev,Post index ischemic stroke hospitalization,TRUE,FALSE,FALSE,FALSE,Post_index_ischemic_stroke_hospitalization_days
-Post_index_cardiac_rehab_number,intg,Number of post-index cardiac rehab visits,TRUE,FALSE,FALSE,FALSE,NA
+Post_index_cardiac_rehab_number,ctns,Number of post-index cardiac rehab visits,TRUE,FALSE,FALSE,FALSE,NA
 Post_index_cardiac_rehab,bnry,Post-index cardiac rehab,TRUE,FALSE,FALSE,FALSE,NA
 state,catg,SSA state,FALSE,TRUE,TRUE,TRUE,NA
 county_name,catg,county name,FALSE,TRUE,TRUE,TRUE,NA

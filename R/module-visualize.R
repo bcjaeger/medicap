@@ -53,15 +53,29 @@ visualizeServer <- function(
         str_remove(pattern = fixed('summarizer_inputs-'))
 
 
-      .stat <- names(stat_recoder)[
+      .stat_colname <- names(stat_recoder)[
         which(names(stat_recoder) == .input$statistic)
       ]
 
-      aes_args <- list(x = key_time, y = .stat)
+      .stat_label <- stat_recoder[
+        which(names(stat_recoder) == .input$statistic)
+      ]
+
+      aes_args <- list(x = key_time,
+                       y = paste0("`", .stat_label, "`"))
+
+      lab_args <- list(
+        y = .stat_label,
+        title = key_list[[.input$outcome]]$label
+      )
 
       data_fig <- result()[
         time != I('Overall'), env = list(time = key_time)
       ]
+
+      setnames(data_fig,
+               old = .stat_colname,
+               new = .stat_label)
 
       if(key_list[[.input$outcome]]$type == 'ttev'){
 
@@ -75,11 +89,19 @@ visualizeServer <- function(
 
       if(is_used(.input$exposure)){
 
-
         switch(
           .input$geom,
-          'bars' = aes_args$fill <- .input$exposure,
-          'points' = aes_args$color <- .input$exposure
+          'bars' = {
+            aes_args$fill <- .input$exposure
+            lab_args$fill <- key_list[[.input$exposure]]$label |>
+              str_replace_all(" ", "\n")
+          },
+          'points' = {
+            aes_args$color <- .input$exposure
+            aes_args$group <- .input$exposure
+            lab_args$color <- key_list[[.input$exposure]]$label |>
+              str_replace_all(" ", "\n")
+          }
         )
 
 
@@ -117,7 +139,11 @@ visualizeServer <- function(
       ps <- position_identity()
 
       if(is_used(.input$exposure)){
-        ps <- position_dodge(width = 2/3)
+
+        n_group_exposure <- length(unique(data_fig[[.input$exposure]]))
+
+        ps <- position_dodge(width = (n_group_exposure-2) / n_group_exposure)
+
       }
 
       base_fig <- switch(
@@ -127,7 +153,8 @@ visualizeServer <- function(
           geom_bar(position = 'dodge', stat = 'identity'),
 
         'points' = base_fig +
-          geom_point(position = ps, size = 2.5)
+          geom_point(position = ps, size = 2.5) +
+          geom_line(position = ps)
 
       )
 
@@ -135,13 +162,12 @@ visualizeServer <- function(
         theme_bw() +
         theme(panel.grid = element_blank(),
               panel.spacing = unit(2, "lines")) +
-        labs(
-          y = stat_recoder[.stat],
-          title = key_list[[.input$outcome]]$label
-        )
+        do.call(labs, args = lab_args)
 
 
-      if(.stat %in% c('bnry_prevalence', 'ttev_inc_cumulative_est')){
+
+
+      if(.stat_colname %in% c('bnry_prevalence', 'ttev_inc_cumulative_est')){
         base_fig <- base_fig +
           # limits include 0 and 1 in case a value is 0 or 1
           scale_y_continuous(limits = c(-0.01, 1.01),
@@ -167,6 +193,7 @@ visualizeServer <- function(
                    ncol = 1)
 
       ggplotly(base_fig,
+               tooltip = c(key_time, .stat_label),
                height = if(n_group==1) 600  else 400 * n_rows)
 
     }) |>
