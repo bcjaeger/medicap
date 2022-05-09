@@ -5,13 +5,13 @@
 # Initialize ----
 
 help_intro_init <- c(
-  "First, select a dataset to analyze" = "box_dataset",
-  "Next, select a set of index years. Results will be presented using data from the years you select." = "box_year",
-  "Pick an outcome from the list of available options. This variable will be summarized in your results" = "box_outcome",
-  "We assess whether summarized values of the outcome differ across groups defined by an exposure variable. If you don't need to do this, you can select 'None'. You must pick a value for this input before accessing inputs below it!" = "box_exposure",
-  "Results will be presented using subsets that you select based on this variable. If you don't need to do this, you can select 'None'. You must pick a value for this input before accessing inputs below it!" = "box_subset_variable",
-  "Results will be replicated overall and in each group, separately. If you don't need this, you can select 'None' for group" = "box_group",
-  "When you are ready to compute your results, click here! If the button is blue, then you are good to go. If it is grey, it means a required input has not been specified." = "box_do_computation"
+  "The data you select here will be summarized in the main window" = "box_dataset",
+  "Beneficiaries with index dates in the years you select will be included in your analysis." = "box_year",
+  "The 'outcome' will be summarized in your results" = "box_outcome",
+  "Summarized values of the outcome will be presented overall and among groups defined by the 'exposure' variable" = "box_exposure",
+  "You may restrict the analysis to subsets of beneficiaries defined by the 'subset' variable" = "box_subset_variable",
+  "You may stratify results based on the 'group' variable." = "box_group",
+  "When you are ready to compute your results, click here! If the button is blue, all the required inputs have been filled in. If it is grey, at least one required input is currently unspecified." = "box_do_computation"
 )
 
 source("packages.R")
@@ -187,12 +187,17 @@ server = function(input, output, session) {
     key_list = key_list,
     key_data = key_data,
     key_time = key_time,
-    help_intro = insert_element(
-      help_intro_init,
-      element_value = 'box_statistic',
-      element_name = 'You can visualize one statistic at a time.',
-      insert_before = 'box_exposure'
-    )
+    help_intro = help_intro_init |>
+      insert_element(
+        element_value = 'box_statistic',
+        element_name = 'You can visualize one statistic at a time.',
+        insert_before = 'box_exposure'
+      ) |>
+      insert_element(
+        element_value = 'box_geom',
+        element_name = "Currently we support bars or points for plots. We plan to add support for boxplots, pie charts, maps, and more as the app continues to develop.",
+        insert_before = 'box_exposure'
+      )
   )
 
 

@@ -452,23 +452,21 @@ dataSummarizerServer <- function(
         intersect(input$exposure) |>
         setdiff(input$outcome)
 
-
       updatePickerInput(
         session = session,
         inputId = 'exposure',
-        choices = exposure_inputs()[exposure_inputs() != input$outcome],
+        choices = exposure_inputs(),
         selected = exposure_selected
       )
 
-      subset_variable_selected <-
-        subset_variable_inputs() |>
+      subset_variable_selected <- subset_variable_inputs() |>
         intersect(input$subset_variable) |>
         setdiff(input$outcome)
 
       updatePickerInput(
         session = session,
         inputId = 'subset_variable',
-        choices = subset_variable_inputs()[subset_variable_inputs() != input$outcome],
+        choices = subset_variable_inputs(),
         selected = subset_variable_selected
       )
 
@@ -480,7 +478,7 @@ dataSummarizerServer <- function(
       updatePickerInput(
         session = session,
         inputId = 'group',
-        choices = group_inputs()[group_inputs() != input$outcome],
+        choices = group_inputs(),
         selected = group_selected
       )
 
@@ -489,6 +487,7 @@ dataSummarizerServer <- function(
     observeEvent(input$exposure, {
 
       if(!is.null(input$outcome)){
+
         if(input$outcome == input$exposure){
           updatePickerInput(
             session = session,
@@ -497,9 +496,11 @@ dataSummarizerServer <- function(
             selected = character()
           )
         }
+
       }
 
       if(!is.null(input$group)){
+
         if(input$group == input$exposure){
           updatePickerInput(
             session = session,
@@ -508,13 +509,26 @@ dataSummarizerServer <- function(
             selected = character()
           )
         }
+
       }
 
     })
 
     observeEvent(input$subset_variable, {
 
-      # TODO: if subset_variable doesn't change, neither should subset values.
+      if(!is.null(input$outcome)){
+
+        if(input$outcome == input$subset_variable){
+          updatePickerInput(
+            session = session,
+            inputId = 'outcome',
+            choices = outcome_inputs(),
+            selected = character()
+          )
+        }
+
+      }
+
       updatePrettyCheckboxGroup(
         inputId = 'subset_value',
         choices = get_unique(dt()[[input$subset_variable]]),
@@ -527,6 +541,7 @@ dataSummarizerServer <- function(
     observeEvent(input$group, {
 
       if(!is.null(input$outcome)){
+
         if(input$outcome == input$group){
           updatePickerInput(
             session = session,
@@ -535,9 +550,11 @@ dataSummarizerServer <- function(
             selected = character()
           )
         }
+
       }
 
       if(!is.null(input$exposure)){
+
         if(input$exposure == input$group){
           updatePickerInput(
             session = session,
@@ -546,6 +563,7 @@ dataSummarizerServer <- function(
             selected = character()
           )
         }
+
       }
 
     })
