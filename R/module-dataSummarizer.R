@@ -70,9 +70,9 @@ dataSummarizerInput <- function(
       pickerInput(
         inputId = ns('dataset'),
         label = 'Select a dataset',
-        choices = c("racs"   = "racs",
-                    "ami"    = "ami",
-                    "stroke" = "stroke"),
+        choices = c("Recent acute coronary syndrome" = "racs",
+                    "Acute myocardial infarction"    = "ami",
+                    "Stroke" = "stroke"),
         selected = 'racs',
         multiple = TRUE,
         options = pickerOptions(maxOptions = 1),

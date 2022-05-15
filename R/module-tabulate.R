@@ -92,7 +92,7 @@ tabulateServer <- function(
         data_gt[, stat := stat * 100, env = list(stat = .stat)]
       }
 
-      domain <- range(data_gt[[.stat]])
+      domain <- range(data_gt[[.stat]], na.rm = TRUE)
 
       data_gt <- data_gt |>
         select(any_of(.gt_cols))

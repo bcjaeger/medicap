@@ -90,6 +90,7 @@ visualizeServer <- function(
 
       stat_mult_by <- 1
       stat_append <- ''
+      dcast_time <- key_time
 
       if(.input$statistic %in% c('bnry_prevalence',
                                  'ttev_inc_cumulative_est')){
@@ -201,8 +202,6 @@ visualizeServer <- function(
             ]
 
           } else {
-
-            dcast_time <- key_time
 
             dcast_formula <- as.formula(
               paste(dcast_time, .input$exposure, sep = ' ~ ')
