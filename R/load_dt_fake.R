@@ -37,6 +37,8 @@ load_dt_fake <- function(n_obs) {
   dt_fake[['Post_index_statin_days']]<-
     abs(round(rnorm(n_obs, mean = 180, sd = 50)))
 
+  dt_fake$ABDHMO_days <- 5000
+
   list(dt_stroke = copy(dt_fake),
        dt_ami = copy(dt_fake),
        dt_racs = copy(dt_fake)) |>
@@ -49,6 +51,7 @@ load_dt_fake <- function(n_obs) {
       Pre_index_hypertension,
       Pre_index_depression,
       year_ABDHMO,
+      ABDHMO_days,
       Post_index_statin,
       Post_index_statin_days
     )

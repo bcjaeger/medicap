@@ -14,7 +14,8 @@ tabulateInput <- function(id,
                         ttev_condition = ttev_condition,
                         ctns_condition = ctns_condition,
                         do_compute_label = do_compute_label,
-                        include_stat_picker = TRUE),
+                        include_stat_picker = TRUE,
+                        include_tbl_inputs = TRUE),
 
   )
 
@@ -91,9 +92,12 @@ tabulateServer <- function(
         data_gt[, stat := stat * 100, env = list(stat = .stat)]
       }
 
+      domain <- range(data_gt[[.stat]])
+
       data_gt <- data_gt |>
-        select(any_of(.gt_cols)) |>
-        mutate(across(all_of(.stat), table_value))
+        select(any_of(.gt_cols))
+      # |>
+      #   mutate(across(all_of(.stat), table_value))
 
 
       dcast_lhs_variables <- c("1")
@@ -139,11 +143,36 @@ tabulateServer <- function(
           tab_stubhead(label = key_list[[.exposure]]$label)
       }
 
+      cols <- setdiff(names(gt_args$data), c(.exposure, .group))
+
       gt_out <- gt_out |>
         tab_spanner(label = 'Calendar year', columns = all_of(.year))
 
+      if(is_used(.input$tbl_color)){
+        gt_out <- gt_out |>
+          data_color(
+            columns = all_of(cols),
+            colors = scales::col_numeric(
+              palette = c(
+                "white",
+                switch(.input$tbl_color,
+                       'Blue' = "#337ab7",
+                       "Earthy" = "bisque3")
+              ),
+              domain = domain
+            )
+          )
+      }
+
       gt_out |>
-        cols_align('center')
+        cols_align('center') |>
+        text_transform(
+          locations = cells_body(columns = cols),
+          fn = function(x) table_value(as.numeric(x))
+        )
+
+
+
     }) |>
       bindEvent(input[["summarizer_inputs-do_computation"]])
 

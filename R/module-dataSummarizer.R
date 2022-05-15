@@ -6,7 +6,8 @@ dataSummarizerInput <- function(
     ctns_condition,
     do_compute_label,
     include_stat_picker = FALSE,
-    include_viz_inputs = FALSE
+    include_viz_inputs = FALSE,
+    include_tbl_inputs = FALSE
 ) {
 
   ns <- NS(id)
@@ -14,6 +15,7 @@ dataSummarizerInput <- function(
   stat_picker_condition <- tolower(as.character(include_stat_picker))
 
   viz_input_condition <- tolower(as.character(include_viz_inputs))
+  tbl_input_condition <- tolower(as.character(include_tbl_inputs))
 
   stat_picker_compute_addon <- switch(stat_picker_condition,
                                       'true' = 'input.statistic.length > 0 &',
@@ -47,6 +49,7 @@ dataSummarizerInput <- function(
   if(include_viz_inputs){
     compute_ready <- glue(
       "( {compute_ready} ) &
+       ( input.pool.length > 0 ) &
        ( input.geom.length > 0 )"
     )
   }
@@ -99,8 +102,39 @@ dataSummarizerInput <- function(
       status = 'info'
     ),
 
-    HTML('<br>'),HTML('<br>'),
+    HTML('<br>'), HTML('<br>'),
 
+    div(
+      id = ns('box_pool'),
+      conditionalPanel(
+        condition = viz_input_condition,
+        ns = ns,
+        pickerInput(
+          inputId = ns("pool"),
+          label = "Select a pooling strategy",
+          choices = c("Pool results across all years" = "pool",
+                      "Show results for each year" = "stratify",
+                      "Show results for each year and pooled" = "everything"),
+          selected = "stratify",
+          multiple = TRUE,
+          options = pickerOptions(maxOptions = 1),
+          width = input_width
+        )
+      )
+    ),
+
+    # div(
+    #   id = ns('box_text'),
+    #   conditionalPanel(
+    #     condition = viz_input_condition,
+    #     ns = ns,
+    #     checkboxInput(
+    #       inputId = ns("showtext"),
+    #       label = "Show text in figure?",
+    #       value = FALSE
+    #     )
+    #   )
+    # ),
 
     div(
       id = ns("box_outcome"),
@@ -155,8 +189,8 @@ dataSummarizerInput <- function(
         pickerInput(
           inputId = ns('geom'),
           label = 'Select a plotting geometry',
-          choices = c("points", "bars"),
-          selected = "bars",
+          choices = c("Bar chart" = "bar"),
+          selected = "bar",
           multiple = TRUE,
           options = pickerOptions(maxOptions = 1),
           width = input_width
@@ -201,6 +235,21 @@ dataSummarizerInput <- function(
         multiple = TRUE,
         options = pickerOptions(maxOptions = 1),
         width = input_width
+      )
+    ),
+
+    div(
+      id = ns("box_tbl_color"),
+      conditionalPanel(
+        condition = tbl_input_condition,
+        ns = ns,
+        pickerInput(
+          inputId = ns('tbl_color'),
+          label = 'Add color to the table?',
+          choices = c("None", "Blue", "Earthy"),
+          selected = "Blue",
+          width = input_width
+        )
       )
     ),
 
@@ -776,10 +825,23 @@ dataSummarizerServer <- function(
                                           paste(dt_list$year))),
           env = list('key_time' = key_time)]
 
+      if(is_used(dt_list$exposure)){
+        out[,
+            exposure := relevel_coerce(exposure, ref = 'Overall'),
+            env = dt_list]
+      }
+
+      if(is_used(dt_list$group)){
+        out[,
+            group := relevel_coerce(group, ref = 'All groups'),
+            env = dt_list]
+      }
 
       move_to_front <- c(key_time, dt_groups)
 
       setcolorder(out, move_to_front)
+
+      out
 
 
     }) |>

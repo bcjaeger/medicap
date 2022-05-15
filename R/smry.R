@@ -130,7 +130,7 @@ smry_bnry <- function(x,
 smry_ttev <- function(status,
                       time,
                       horizon,
-                      ABDHMO_days,
+                      ABDHMO_days = NULL,
                       crude_inc_mult_by = 365.25 * 1000){
 
   if(sum(status, na.rm = TRUE) < 12){
@@ -144,7 +144,9 @@ smry_ttev <- function(status,
   # follow-up time for the given outcome. Patients who did
   # not have an event will not have a recorded follow-up time
   # for the given outcome but will have a value for ABDHMO_days.
-  time[is.na(time)] <- ABDHMO_days[is.na(time)]
+  if(!is.null(ABDHMO_days)){
+    time[is.na(time)] <- ABDHMO_days[is.na(time)]
+  }
 
   # truncate time values and status values to the given horizon
   time_past_horizon <- which(time > horizon)

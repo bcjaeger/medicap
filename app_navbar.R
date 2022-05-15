@@ -50,7 +50,7 @@ key_list <- key_data |>
     tbl_values = setdiff(names(key_data), 'variable')
   )
 
-use_fake <- FALSE
+use_fake <- TRUE
 
 if(use_fake){
 
@@ -140,7 +140,7 @@ ui <- shinyUI(
             )
           ),
           mainPanel = mainPanel(
-            plotlyOutput('visualize_output')
+            uiOutput('visualize_output')
           )
         )
       )
