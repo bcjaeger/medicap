@@ -167,7 +167,7 @@ tabulateServer <- function(
       gt_out |>
         cols_align('center') |>
         text_transform(
-          locations = cells_body(columns = cols),
+          locations = cells_body(columns = all_of(cols)),
           fn = function(x) table_value(as.numeric(x))
         )
 
