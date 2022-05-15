@@ -97,18 +97,17 @@ visualizeServer <- function(
         stat_append <- '%'
       }
 
-      env = list(outcome = .stat_col)
-
       data_fig <- data_fig[,
                            outcome := outcome * stat_mult_by,
-                           env = env]
+                           env = list(outcome = .stat_col)]
 
       data_fig <- data_fig[,
                            label := paste0(table_value(outcome), stat_append),
-                           env = env]
+                           env = list(outcome = .stat_col)]
 
 
-      if(key_list[[.input$outcome]]$type == 'ttev'){
+      if(key_list[[.input$outcome]]$type == 'ttev' &&
+         .input$geom == 'bar'){
 
         .by <- c(key_time)
         if(is_used(.input$exposure)) .by <- c(.by, .input$exposure)
@@ -118,23 +117,13 @@ visualizeServer <- function(
 
       }
 
-
-      fig_cols <- c(
-        'chartreuse3',
-        'cornflowerblue',
-        'darkgoldenrod1',
-        'peachpuff3',
-        'mediumorchid2',
-        'turquoise3',
-        'wheat4',
-        'slategray2'
-      )
-
       y_cols <- .stat_col
       lab_cols <- "label"
       exposure_levels <- NULL
       legend_args <- list()
       y_min_max <- range(data_fig[[.input$statistic]])
+
+      add_year_to_exposure <- FALSE
 
       if(!is_used(.input$group)){
 
@@ -157,6 +146,12 @@ visualizeServer <- function(
 
       plots <- vector(mode = 'list', length = length(data_split))
 
+      if(.input$geom == 'line' &&
+         .input$statistic == 'ttev_inc_cumulative_est' &&
+         !is_used(.input$exposure)){
+        .input$exposure <- key_time
+      }
+
       for(i in seq_along(plots)){
 
         if(is_used(.input$exposure)){
@@ -169,19 +164,71 @@ visualizeServer <- function(
           # needs to be re-calculated b/c the overall group
           # shouldn't be taken into account
 
-          dcast_formula <- as.formula(
-            paste(key_time, .input$exposure, sep = ' ~ ')
-          )
+          if(.input$geom == 'line' &&
+             .input$statistic == 'ttev_inc_cumulative_est'){
 
-          data_split[[i]] <- data_split[[i]] |>
-            dcast(formula = dcast_formula,
-                  value.var = c(names(.stat_options), "label"))
+            add_year_to_exposure <- .input$pool != 'pool' &&
+              .input$exposure != key_time
+
+            dcast_time <- 'ttev_time'
+
+            dcast_formula <- as.formula(
+              paste(dcast_time, .input$exposure, sep = ' ~ ')
+            )
+
+            data_split[[i]] <- data_split[[i]][
+              ,
+              .SD[.N], by = .(time, exposure),
+              env = list(exposure = .input$exposure,
+                         time = dcast_time)
+            ]
+
+            if(.input$pool != 'pool' && .input$exposure != key_time){
+              data_split[[i]][
+                ,
+                exposure := paste(exposure, key_time, sep = ', '),
+                env = list(exposure = .input$exposure,
+                           key_time = key_time)
+              ]
+            }
+
+            data_split[[i]] <- data_split[[i]] |>
+              dcast(formula = dcast_formula,
+                    value.var = c(names(.stat_options), "label"))
+
+            data_split[[i]] <- data_split[[i]][
+              , lapply(.SD, zoo::na.locf, na.rm = FALSE)
+            ]
+
+          } else {
+
+            dcast_time <- key_time
+
+            dcast_formula <- as.formula(
+              paste(dcast_time, .input$exposure, sep = ' ~ ')
+            )
+
+            data_split[[i]] <- data_split[[i]] |>
+              dcast(formula = dcast_formula,
+                    value.var = c(names(.stat_options), "label"))
+
+          }
 
           exposure_levels <- result() |>
             getElement(.input$exposure)|>
             droplevels() |>
             levels() |>
             setdiff('Overall')
+
+          if(add_year_to_exposure && .input$exposure != key_time){
+
+            exposure_levels <-
+              expand.grid(exposure_levels,
+                          .input$year) |>
+              glue_data("{Var1}, {Var2}") |>
+              as.character()
+
+          }
 
           y_cols <- paste(.stat_col,
                           exposure_levels,
@@ -228,11 +275,26 @@ visualizeServer <- function(
               )
           }
 
+          if(.input$geom == 'line'){
+
+            fig <- fig |>
+              add_lines(
+                x = data_split[[i]][[dcast_time]],
+                y = data_split[[i]][[y_cols[j]]],
+                text = data_split[[i]][[lab_cols[j]]],
+                textposition = 'top middle',
+                name = exposure_levels[j],
+                hoverinfo = 'text',
+                hovertext = hover_text
+              )
+
+          }
+
           if(.input$geom == 'bar'){
             fig <- fig |>
               add_trace(
                 type = .input$geom,
-                x = data_split[[i]][[key_time]],
+                x = data_split[[i]][[dcast_time]],
                 y = data_split[[i]][[y_cols[j]]],
                 text = data_split[[i]][[lab_cols[j]]],
                 textposition = 'top middle',
@@ -298,7 +360,12 @@ visualizeServer <- function(
               l = 50,
               r = 50
             ),
-            xaxis = list(title = key_list[[key_time]]$label),
+            xaxis = list(
+              title = if(dcast_time == key_time)
+                key_list[[key_time]]$label
+              else if(dcast_time == 'ttev_time')
+                "Days since index date"
+            ),
             yaxis = list(title = .stat_lab,
                          range = c(yplot_min, yplot_max)),
             legend = legend_args

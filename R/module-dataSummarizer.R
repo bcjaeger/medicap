@@ -533,6 +533,21 @@ dataSummarizerServer <- function(
 
     })
 
+    # present option for line charts if appropriate stat is picked
+    observeEvent(input$statistic, {
+
+      if(input$statistic == 'ttev_inc_cumulative_est'){
+        updatePickerInput(
+          session = session,
+          inputId = 'geom',
+          choices = c("Bar chart" = "bar",
+                      "Line chart" = "line"),
+          selected = character()
+        )
+      }
+
+    })
+
     observeEvent(input$exposure, {
 
       if(!is.null(input$outcome)){
