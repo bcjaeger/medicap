@@ -670,7 +670,7 @@ dataSummarizerServer <- function(
       }
 
       # only subset the data once, without copying any data
-      dt_subsetted <- glue("dt()[{dt_subset}, env = dt_list]") |>
+      dt_subsetted <- glue("dt()[I({dt_subset}), env = dt_list]") |>
         parse_expr() |>
         eval()
 

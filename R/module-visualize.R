@@ -150,8 +150,16 @@ visualizeServer <- function(
       if(.input$geom == 'line' &&
          .input$statistic == 'ttev_inc_cumulative_est' &&
          !is_used(.input$exposure)){
-        .input$exposure <- key_time
+
+        if(.input$pool != 'pool'){
+          .input$exposure <- key_time
+        } else {
+          dcast_time <- 'ttev_time'
+        }
+
       }
+
+
 
       for(i in seq_along(plots)){
 
@@ -274,18 +282,41 @@ visualizeServer <- function(
               )
           }
 
+          if(is_used(.input$exposure)){
+            hover_text <- paste0(
+              "<b>",
+              exposure_levels[j],
+              "</b>",
+              "<br>",
+              hover_text
+            )
+          }
+
+
           if(.input$geom == 'line'){
 
-            fig <- fig |>
-              add_lines(
-                x = data_split[[i]][[dcast_time]],
-                y = data_split[[i]][[y_cols[j]]],
-                text = data_split[[i]][[lab_cols[j]]],
-                textposition = 'top middle',
-                name = exposure_levels[j],
-                hoverinfo = 'text',
-                hovertext = hover_text
+            # shouldn't try to add data if there are none.
+            if(!is.null(data_split[[i]][[dcast_time]]) &&
+               !is.null(data_split[[i]][[y_cols[j]]])){
+
+              fig <- try(
+                fig |>
+                  add_lines(
+                    x = data_split[[i]][[dcast_time]],
+                    y = data_split[[i]][[y_cols[j]]],
+                    text = data_split[[i]][[lab_cols[j]]],
+                    textposition = 'top middle',
+                    name = exposure_levels[j],
+                    hoverinfo = 'text',
+                    hovertext = hover_text
+                  )
               )
+
+            }
+
+
+
+            if(is_try_error(fig)) browser()
 
           }
 

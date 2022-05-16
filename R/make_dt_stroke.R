@@ -93,9 +93,16 @@ make_dt_stroke <- function(path_to_data) {
         "2" = "Moderate",
         "1" = "Low"
       ),
+      Pre_index_statin_intensity = recode(
+        Pre_index_statin_intensity,
+        "3" = "High",
+        "2" = "Moderate",
+        "1" = "Low",
+        "0" = "None"
+      ),
       Pre_index_statin_intensity = factor(
         Pre_index_statin_intensity,
-        levels = c("Low", "Moderate", "High")
+        levels = c("None", "Low", "Moderate", "High")
       ),
       Pre_index_ezetimibe = recode(Pre_index_ezetimibe,
                                    "0" = "No",

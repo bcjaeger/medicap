@@ -68,6 +68,7 @@ smry_ctns.character <- function(x,
   smry_ctns(x = as.factor(x), stat_names = stat_names)
 
 }
+
 smry_ctns.factor <- function(x,
                       stat_names = c('mean_est',
                                      'quantile',
@@ -157,9 +158,21 @@ smry_ttev <- function(status,
   .status <- status
   .status[time_past_horizon] <- 0
 
-  out <- cuminc(ftime = .time, fstatus = .status) |>
-    getElement(1) |>
-    as.data.table()
+  if(sum(.status, na.rm = TRUE) == 0){
+    return(data.table(ttev_time = NA_real_,
+                      ttev_inc_cumulative_est = NA_real_,
+                      ttev_inc_cumulative_se = NA_real_,
+                      ttev_inc_crude_est = NA_real_))
+  }
+
+  out <- try(
+    cuminc(ftime = .time, fstatus = .status) |>
+      getElement(1) |>
+      as.data.table()
+  )
+
+  if(inherits(out, 'try-error')) browser()
+
 
   out[, var:= sqrt(var)]
 
@@ -177,6 +190,19 @@ smry_ttev <- function(status,
 
   names(out) <- paste('ttev', names(out), sep = '_')
 
-  out[index_keep]
+  out <- out[index_keep]
+
+  diffs <- c(1, diff(out$ttev_time))
+
+  out[diffs == 0, ttev_time := ttev_time + 0.01]
+
+  # prepend the 0 row so that plots will look more uniform
+
+  first_row <- data.table(ttev_time = 0,
+                          ttev_inc_cumulative_est = 0,
+                          ttev_inc_cumulative_se = 0,
+                          ttev_inc_crude_est = 0)
+
+  rbindlist(list(first_row, out))
 
 }

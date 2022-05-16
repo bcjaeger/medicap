@@ -87,15 +87,21 @@ make_dt_racs <- function(path_to_data) {
       Pre_index_statin = dplyr::recode(Pre_index_statin,
                                        "0" = "No",
                                        "1" = "Yes"),
-      Pre_index_statin_intensity = dplyr::recode(
+      Pre_index_statin_intensity = if_else(
+        Pre_index_statin == 0,
+        true = 0,
+        false = Pre_index_statin_intensity
+      ),
+      Pre_index_statin_intensity = recode(
         Pre_index_statin_intensity,
         "3" = "High",
         "2" = "Moderate",
-        "1" = "Low"
+        "1" = "Low",
+        "0" = "None"
       ),
       Pre_index_statin_intensity = factor(
         Pre_index_statin_intensity,
-        levels = c("Low", "Moderate", "High")
+        levels = c("None", "Low", "Moderate", "High")
       ),
       Pre_index_ezetimibe = dplyr::recode(Pre_index_ezetimibe,
                                           "0" = "No",
