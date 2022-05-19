@@ -143,6 +143,20 @@ visualizeServer <- function(
 
       y_min_max <- range(data_fig[[.input$statistic]])
 
+      if(is_used(.input$exposure)){
+
+        data_fig[
+          ,
+          exposure := fct_reorder(
+            .f = as.factor(exposure),
+            .x = stat
+          ),
+          env = list(exposure = .input$exposure,
+                     stat = .stat_col)
+        ]
+
+      }
+
       data_split <- split(data_fig, data_fig[[.input$group]])
 
       plots <- vector(mode = 'list', length = length(data_split))
@@ -221,11 +235,39 @@ visualizeServer <- function(
 
           }
 
-          exposure_levels <- result() |>
-            getElement(.input$exposure)|>
-            droplevels() |>
-            levels() |>
-            setdiff('Overall')
+          if(.input$exposure %in% c("Age")){
+
+            exposure_levels <- result() |>
+              getElement(.input$exposure)|>
+              droplevels() |>
+              levels() |>
+              setdiff('Overall')
+
+          } else {
+
+            exposure_level_data <- result()[
+              time == I('Overall'),
+              env = list(time = key_time)
+            ]
+
+            if(key_list[[.input$outcome]]$type == 'ttev'){
+
+              exposure_level_data <- exposure_level_data[
+                ttev_time == .input$horizon
+              ]
+
+            }
+
+            exposure_levels <- exposure_level_data |>
+              getElement(.input$exposure)|>
+              fct_reorder(.x = exposure_level_data[[.stat_col]]) |>
+              droplevels() |>
+              levels() |>
+              setdiff('Overall')
+
+          }
+
+
 
           if(add_year_to_exposure && .input$exposure != key_time){
 
@@ -321,6 +363,7 @@ visualizeServer <- function(
           }
 
           if(.input$geom == 'bar'){
+
             fig <- fig |>
               add_trace(
                 type = .input$geom,
@@ -376,6 +419,8 @@ visualizeServer <- function(
 
         }
 
+        # browser()
+
         plots[[i]] <- fig |>
           layout(
             title = list(
@@ -391,9 +436,15 @@ visualizeServer <- function(
               r = 50
             ),
             xaxis = list(
-              title = if(dcast_time == key_time)
-                key_list[[key_time]]$label
-              else if(dcast_time == 'ttev_time')
+              title = if(dcast_time == key_time){
+
+                if(.input$pool != 'pool'){
+                  key_list[[key_time]]$label
+                } else {
+                  ""
+                }
+
+              } else if(dcast_time == 'ttev_time')
                 "Days since index date"
             ),
             yaxis = list(title = .stat_lab,

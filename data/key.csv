@@ -31,6 +31,7 @@ Post_index_statin_intensity,catg,Post-index Statin intensity,FALSE,TRUE,FALSE,TR
 Post_index_high_intensity_statin,ttev,Post-index high intensity statin use,TRUE,FALSE,FALSE,FALSE,Post_index_high_intensity_statin_days
 Post_index_ezetimibe,ttev,Post-index etetimibe use,TRUE,FALSE,FALSE,FALSE,Post_index_ezetimibe_days
 Post_index_PCSK9_inhibitor,ttev,Post-index PCSK9 inhibitor use,TRUE,FALSE,FALSE,FALSE,Post_index_PCSK9_inhibitor_days
+Post_index_cardiologist_visit_90,bnry,Post-index cardiologist visit within 90-days,TRUE,TRUE,TRUE,TRUE,
 Post_index_cardiologist_visit,ttev,Post-index cardiologist visit,TRUE,FALSE,FALSE,FALSE,Post_index_cardiologist_visit_days
 Post_index_neurologist_visit,ttev,Post-index neurologist visit,TRUE,FALSE,FALSE,FALSE,Post_index_neurologist_visit_days
 Post_index_outpatient_visit,ttev,Post-index outpatient visit,TRUE,FALSE,FALSE,FALSE,Post_index_outpatient_visit_days

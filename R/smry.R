@@ -1,4 +1,7 @@
 
+# TODO
+# NUMBER OF EVENTS < 12 => MISSING
+# ALSO NUMBER OF NON-EVENTS < 12 => MISSING
 
 smry_ctns <- function(x,
                       stat_names = c('mean_est',
@@ -97,7 +100,9 @@ smry_bnry <- function(x,
               stat_names = stat_names)
   )
 
-  if(length(na.omit(x)) < 12){
+  if(length(na.omit(x)) < 12 ||
+     sum(na.omit(x) == 1) < 12 ||
+     sum(na.omit(x) == 0) < 12){
     return(
       data.table(
         bnry_n_event = NA_real_,
@@ -201,7 +206,7 @@ smry_ttev <- function(status,
   first_row <- data.table(ttev_time = 0,
                           ttev_inc_cumulative_est = 0,
                           ttev_inc_cumulative_se = 0,
-                          ttev_inc_crude_est = 0)
+                          ttev_inc_crude_est = NA_real_)
 
   rbindlist(list(first_row, out))
 

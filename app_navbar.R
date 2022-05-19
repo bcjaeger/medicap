@@ -74,11 +74,17 @@ if(use_fake){
   path_to_data <-
     file.path(peer_drive, "Users", "Ligong", "Shiny app", "shiny")
 
-  if(!exists('dt_racs')) dt_racs <- load_dt_racs(path_to_data)
-  if(!exists('dt_ami')) dt_ami <- load_dt_ami(path_to_data)
-  if(!exists('dt_stroke')) dt_stroke <- load_dt_stroke(path_to_data)
+  if(!exists('dt_racs'))
+    dt_racs <- load_dt(path_to_data, 'cohort_RACS_preprocessed.csv')
+
+  if(!exists('dt_ami'))
+    dt_ami <- load_dt(path_to_data, 'cohort_AMI_100_preprocessed.csv')
+
+  if(!exists('dt_stroke'))
+    dt_stroke <- load_dt(path_to_data, 'cohort_stroke_preprocessed.csv')
 
 }
+
 
 # UI ----
 
@@ -89,7 +95,7 @@ ui <- shinyUI(
     introjsUI(),
 
     # title ----
-    titlePanel("Medicap"),
+    titlePanel("Medicapp"),
 
     navbarPage(
       title = "Select a module",
@@ -198,7 +204,7 @@ server = function(input, output, session) {
       ) |>
       insert_element(
         element_value = 'box_geom',
-        element_name = "Currently we support bars or points for plots. We plan to add support for boxplots, pie charts, maps, and more as the app continues to develop.",
+        element_name = "Currently we support bar charts for all outcomes and line charts for post-index outcomes. We plan to add support for boxplots, maps, and more as the app continues to develop.",
         insert_before = 'box_exposure'
       )
   )

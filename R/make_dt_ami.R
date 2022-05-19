@@ -7,7 +7,9 @@
 make_dt_ami <- function(path_to_data) {
 
   data_in <-
-    fread(file.path(path_to_data, 'cohort_AMI.csv')) |>
+    fread(file.path(path_to_data, 'cohort_AMI_100.csv'))
+
+  data_in <- data_in |>
     rename(
       Year = year,
       Age = age_cat,
@@ -90,7 +92,7 @@ make_dt_ami <- function(path_to_data) {
                                 "1" = "Yes"),
       Pre_index_statin_intensity = if_else(
         Pre_index_statin == 0,
-        true = 0,
+        true = 0L,
         false = Pre_index_statin_intensity
       ),
       Pre_index_statin_intensity = recode(
@@ -164,7 +166,7 @@ make_dt_ami <- function(path_to_data) {
     )
 
   fwrite(data_in,
-         file = file.path(path_to_data, 'cohort_AMI_preprocessed.csv'))
+         file = file.path(path_to_data, 'cohort_AMI_100_preprocessed.csv'))
 
   NULL
 

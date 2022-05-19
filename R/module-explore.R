@@ -54,6 +54,13 @@ exploreServer <- function(
       bindEvent(result())
 
 
+    # browser()
+
+    numeric_cols <- reactive(
+      names(data_tbl())[sapply(data_tbl(), is_double_ish)]
+    )
+
+
 
     data_tbl() |>
       datatable(
@@ -69,6 +76,7 @@ exploreServer <- function(
         rownames = FALSE,
         colnames = recode(names(result()), !!!stat_recoder)
       ) |>
+      formatRound(columns = numeric_cols()) |>
       renderDataTable()
 
   })

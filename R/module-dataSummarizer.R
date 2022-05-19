@@ -69,7 +69,7 @@ dataSummarizerInput <- function(
       id = ns("box_dataset"),
       pickerInput(
         inputId = ns('dataset'),
-        label = 'Select a dataset',
+        label = 'Select a cohort',
         choices = c("Recent acute coronary syndrome" = "racs",
                     "Acute myocardial infarction"    = "ami",
                     "Stroke" = "stroke"),
